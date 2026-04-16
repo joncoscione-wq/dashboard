@@ -1,0 +1,7 @@
+[
+  { "id": 201, "emp_id": 12, "tipo": "Examen — Grado", "inst": "", "mat": "", "fecha": "2026-02-06", "dias": 2, "cert": "Sí" },
+  { "id": 202, "emp_id": 12, "tipo": "Examen — Grado", "inst": "", "mat": "", "fecha": "2026-02-25", "dias": 2, "cert": "Sí" },
+  { "id": 203, "emp_id": 3,  "tipo": "Examen — Grado", "inst": "", "mat": "", "fecha": "2026-02-14", "dias": 2, "cert": "Sí" },
+  { "id": 204, "emp_id": 4,  "tipo": "Examen — Grado", "inst": "", "mat": "", "fecha": "2026-03-13", "dias": 2, "cert": "Sí" },
+  { "id": 205, "emp_id": 6,  "tipo": "Examen — Grado", "inst": "", "mat": "", "fecha": "2026-02-17", "dias": 2, "cert": "Sí" }
+]

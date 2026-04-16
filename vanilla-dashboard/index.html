@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RRHH · Contexto Investments</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CDN (sin build step) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary:      '#0d4259',
+            'primary-90': '#154e69',
+            'primary-70': '#2a6884',
+            accent:       '#186f8a',
+            'accent-bg':  '#e4f2f7',
+            taupe:        '#a5a08e',
+            'taupe-bg':   '#f5f2ed',
+            ci: {
+              bg:         '#f3f4f6',
+              surface:    '#ffffff',
+              border:     '#dde1e8',
+              border2:    '#c6ccd6',
+              text:       '#0d2d3e',
+              muted:      '#7a8899',
+              green:      '#1a7a4a',
+              'green-bg': '#e5f5ec',
+              red:        '#b83228',
+              'red-bg':   '#fceeed',
+              amber:      '#a34f00',
+              'amber-bg': '#fef2e0',
+            }
+          },
+          fontFamily: {
+            poppins:   ['Poppins', 'sans-serif'],
+            'dm-sans': ['"DM Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* ── Brand tokens ── */
+    :root {
+      --primary:    #0d4259;
+      --accent:     #186f8a;
+      --primary-90: #154e69;
+      --primary-70: #2a6884;
+      --accent-bg:  #e4f2f7;
+      --bg:         #f3f4f6;
+      --surface:    #ffffff;
+      --border:     #dde1e8;
+      --border2:    #c6ccd6;
+      --text:       #0d2d3e;
+      --muted:      #7a8899;
+      --green:      #1a7a4a;
+      --green-bg:   #e5f5ec;
+      --red:        #b83228;
+      --red-bg:     #fceeed;
+      --amber:      #a34f00;
+      --amber-bg:   #fef2e0;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 13px; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+    /* Panel visibility */
+    .panel-content         { display: none; }
+    .panel-content.active  { display: block; }
+
+    /* Tab */
+    .tab-item { padding: 15px 20px; font-size: 15px; font-weight: 500; font-family: 'DM Sans', sans-serif; color: rgba(255,255,255,.42); cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; transition: all .15s; display: flex; align-items: center; gap: 7px; user-select: none; }
+    .tab-item:hover  { color: rgba(255,255,255,.75); background: rgba(255,255,255,.03); }
+    .tab-item.active { color: #fff; border-bottom-color: var(--accent); }
+
+    /* KPI card */
+    .kpi-card { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 5px rgba(13,66,89,.06); flex: 1; min-width: 130px; position: relative; overflow: hidden; padding: 20px 22px; }
+    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--accent); border-radius: 12px 0 0 12px; }
+
+    /* Card genérica */
+    .card { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); padding: 20px; box-shadow: 0 1px 5px rgba(13,66,89,.05); }
+    .card-title { font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+    /* Tabla */
+    .tbl-card    { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 1px 5px rgba(13,66,89,.05); }
+    .tbl-toolbar { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .tbl-th { background: #f0f3f6; padding: 11px 16px; text-align: left; font-family: 'Poppins', sans-serif; font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .tbl-td { padding: 11px 16px; vertical-align: middle; font-size: 13px; }
+    .tbl-tr { border-bottom: 1px solid #f0f3f6; transition: background .1s; }
+    .tbl-tr:hover { background: var(--accent-bg); }
+
+    /* Botones */
+    .btn         { padding: 8px 16px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px; transition: all .15s; font-family: 'DM Sans', sans-serif; }
+    .btn-accent  { background: var(--accent); color: #fff; }
+    .btn-accent:hover { background: var(--primary-70); }
+    .btn-outline { background: var(--surface); color: var(--primary); border: 1.5px solid var(--border2); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-sm      { padding: 5px 10px; font-size: 11px; }
+    .btn-danger  { background: var(--red-bg); color: var(--red); border: none; }
+    .btn-danger:hover { background: var(--red); color: #fff; }
+
+    /* Inputs */
+    .field-input  { width: 100%; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 13px; color: var(--text); background: var(--bg); outline: none; font-family: 'DM Sans', sans-serif; transition: border-color .15s; }
+    .field-input:focus { border-color: var(--accent); background: #fff; }
+    .field-label  { display: block; font-family: 'Poppins', sans-serif; font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 5px; }
+
+    /* Badge */
+    .badge         { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-green   { background: var(--green-bg);   color: var(--green); }
+    .badge-red     { background: var(--red-bg);     color: var(--red); }
+    .badge-amber   { background: var(--amber-bg);   color: var(--amber); }
+    .badge-accent  { background: var(--accent-bg);  color: var(--accent); }
+    .badge-gray    { background: #f0f3f6;            color: #6a7380; }
+
+    /* Progress bar */
+    .prog-bg   { flex: 1; height: 5px; background: #e8ecf0; border-radius: 4px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 4px; }
+
+    /* Presencialidad */
+    .wc { aspect-ratio:1; border-radius:7px; display:flex; align-items:center; justify-content:center; font-family:'Poppins',sans-serif; font-size:10px; font-weight:700; cursor:pointer; transition:all .12s; border:1.5px solid transparent; min-height:32px; }
+    .wc:hover { transform: scale(1.08); }
+    .wc.presencial { background: var(--green-bg);  color: var(--green);  border-color: #b0dcc0; }
+    .wc.remoto     { background: var(--accent-bg); color: var(--accent); border-color: #b0d4e2; }
+    .wc.ausente    { background: var(--red-bg);    color: var(--red);    border-color: #e8b0ac; }
+    .wc.libre      { background: #f0f3f6; color: #c0c8d0; border-color: #dde3ea; }
+
+    /* Toast */
+    #toast { position: fixed; bottom: 24px; right: 24px; background: var(--primary); color: #fff; padding: 12px 18px; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; box-shadow: 0 6px 28px rgba(13,66,89,.28); z-index: 9999; border-left: 4px solid var(--accent); display: flex; align-items: center; gap: 12px; min-width: 220px; transform: translateY(80px); opacity: 0; transition: transform .3s, opacity .3s; }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    /* People hero */
+    .ppl-hero { background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); color: #fff; border-radius: 12px; padding: 24px 28px; position: relative; overflow: hidden; }
+    .ppl-hero::before { content: ''; position: absolute; right: -40px; bottom: -40px; width: 180px; height: 180px; background: rgba(255,255,255,.06); border-radius: 50%; }
+
+    /* Lock screen */
+    #lock-screen { position: fixed; inset: 0; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; background: radial-gradient(ellipse at top, rgba(24,111,138,.35) 0%, transparent 55%), linear-gradient(135deg, #0a3043 0%, var(--primary) 45%, #072736 100%); animation: lockIn .35s ease; }
+    #lock-screen.unlocked { animation: lockOut .4s ease forwards; pointer-events: none; }
+    @keyframes lockIn  { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes lockOut { from { opacity: 1; } to { opacity: 0; transform: scale(1.03); } }
+    .lock-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,.32); background: transparent; transition: all .15s; }
+    .lock-dot.filled { background: var(--accent); border-color: var(--accent); transform: scale(1.12); }
+    .lock-key { aspect-ratio: 1; border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #fff; cursor: pointer; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.08); transition: all .12s; }
+    .lock-key:hover  { background: rgba(255,255,255,.18); }
+    .lock-key:active { transform: scale(.94); }
+
+    /* Form panel */
+    .form-panel         { display: none; }
+    .form-panel.open    { display: block; }
+
+    /* Modal */
+    .modal-overlay      { display: none; position: fixed; inset: 0; background: rgba(13,66,89,.5); backdrop-filter: blur(2px); z-index: 9998; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.open { display: flex; }
+    .modal-card         { background: #fff; border-radius: 14px; max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 18px 60px rgba(0,0,0,.25); animation: modalIn .18s ease; }
+    @keyframes modalIn  { from { opacity:0; transform: translateY(10px) scale(.98); } to { opacity:1; transform: none; } }
+
+    /* Inline edit */
+    .eq-edit { width: 100%; padding: 4px 6px; border: 1px solid transparent; border-radius: 5px; background: transparent; font-size: 13px; font-family: inherit; color: inherit; transition: all .15s; }
+    .eq-edit:hover { background: #f3f7fa; border-color: #d8e2ea; }
+    .eq-edit:focus { background: #fff; border-color: var(--accent); outline: none; }
+  </style>
+</head>
+
+<body class="bg-ci-bg text-ci-text font-dm-sans text-[13px] min-h-screen">
+
+<!-- ══════════════════════════════════════════════════════
+     LOCK SCREEN
+══════════════════════════════════════════════════════ -->
+<div id="lock-screen" style="display:none">
+  <div style="background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(14px)"
+       class="rounded-[20px] p-8 w-full max-w-[340px] text-center shadow-[0_24px_70px_rgba(0,0,0,.42)]">
+    <img src="/uploads/logo.png" onerror="this.style.display='none'" class="h-14 mx-auto mb-4 opacity-90">
+    <p class="font-poppins text-[17px] font-bold text-white mb-1">Contexto Investments</p>
+    <p class="text-[10px] text-white/40 uppercase tracking-[2.4px] font-dm-sans mb-6">Recursos Humanos</p>
+    <p class="text-[13px] text-white/80 font-dm-sans mb-5">Ingresá tu PIN para continuar</p>
+
+    <div id="lock-dots" class="flex justify-center gap-4 mb-2 h-5">
+      <div class="lock-dot"></div>
+      <div class="lock-dot"></div>
+      <div class="lock-dot"></div>
+      <div class="lock-dot"></div>
+    </div>
+    <p id="lock-error" class="text-ci-red text-[11px] h-4 mb-3"></p>
+
+    <div class="grid grid-cols-3 gap-2 mt-2">
+      <button class="lock-key" data-k="1">1</button>
+      <button class="lock-key" data-k="2">2</button>
+      <button class="lock-key" data-k="3">3</button>
+      <button class="lock-key" data-k="4">4</button>
+      <button class="lock-key" data-k="5">5</button>
+      <button class="lock-key" data-k="6">6</button>
+      <button class="lock-key" data-k="7">7</button>
+      <button class="lock-key" data-k="8">8</button>
+      <button class="lock-key" data-k="9">9</button>
+      <button class="lock-key col-start-2" data-k="0">0</button>
+      <button class="lock-key" data-k="back"
+              style="font-size:18px;grid-column:3">⌫</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     APP SHELL (oculto hasta desbloquear)
+══════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- TOP BAR -->
+  <header class="sticky top-0 z-[200] flex items-center justify-between px-7 h-[76px]"
+          style="background:var(--primary);border-bottom:3px solid var(--accent)">
+
+    <!-- Logo + nombre -->
+    <div class="flex items-center gap-3.5">
+      <img id="topbar-logo" src="/uploads/logo.png" onerror="this.style.display='none'"
+           class="h-[60px] w-auto block flex-shrink-0">
+      <div style="width:1px;height:38px;background:rgba(255,255,255,.18)" class="flex-shrink-0"></div>
+      <div>
+        <div class="font-poppins text-[22px] font-bold leading-tight" style="color:rgba(255,255,255,.92);letter-spacing:.3px">
+          Contexto Investments
+        </div>
+        <div class="font-dm-sans text-[13px] uppercase mt-1" style="color:rgba(255,255,255,.5);letter-spacing:2.8px">
+          Recursos Humanos
+        </div>
+      </div>
+    </div>
+
+    <!-- Búsqueda global -->
+    <div class="relative flex-1 max-w-[380px] mx-5">
+      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] opacity-50 pointer-events-none">🔍</span>
+      <input id="gsearch" type="text" placeholder="Buscar empleado, área…"
+             class="w-full rounded-[8px] py-2 pl-8 pr-14 text-[12.5px] text-white outline-none transition-all font-dm-sans"
+             style="background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.15)"
+             onfocus="this.style.borderColor='var(--accent)'"
+             onblur="this.style.borderColor='rgba(255,255,255,.15)'">
+      <kbd class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] px-1.5 py-0.5 rounded font-dm-sans pointer-events-none"
+           style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.4)">
+        Ctrl K
+      </kbd>
+      <!-- Dropdown resultados -->
+      <div id="gsearch-drop" class="hidden absolute top-[calc(100%+6px)] left-0 right-0 bg-white border border-ci-border rounded-[10px] shadow-[0_8px_32px_rgba(13,66,89,.18)] max-h-[420px] overflow-y-auto z-[1000]">
+      </div>
+    </div>
+
+    <!-- Derecha: fecha + exportar -->
+    <div class="flex items-center gap-3">
+      <span id="topbar-date" class="font-dm-sans text-[14px]" style="color:rgba(255,255,255,.6)"></span>
+      <span class="font-dm-sans text-[11px] font-semibold px-3 py-1 rounded-full"
+            style="background:rgba(24,111,138,.2);border:1px solid rgba(24,111,138,.4);color:rgba(255,255,255,.75)">
+        CI · RRHH
+      </span>
+      <button onclick="exportarJSON()"
+              class="font-dm-sans text-[12px] font-semibold text-white px-4 py-2 rounded-[7px] transition-colors"
+              style="background:var(--accent)"
+              onmouseover="this.style.background='var(--primary-70)'"
+              onmouseout="this.style.background='var(--accent)'">
+        ↓ Exportar
+      </button>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <nav id="tabs-bar" class="flex gap-0 px-6 overflow-x-auto"
+       style="background:var(--primary-90);border-bottom:1px solid rgba(255,255,255,.07)">
+    <div class="tab-item active" data-tab="dashboard"      onclick="goTab('dashboard')">📊 Resumen</div>
+    <div class="tab-item"        data-tab="equipo"         onclick="goTab('equipo')">👥 Legajo
+      <span id="tbadge-equipo" class="bg-accent text-white rounded-full px-2 py-0.5 text-[10px] font-bold min-w-[18px] text-center">0</span>
+    </div>
+    <div class="tab-item" data-tab="vacaciones"            onclick="goTab('vacaciones')">🌴 Vacaciones</div>
+    <div class="tab-item" data-tab="ausencias"             onclick="goTab('ausencias')">📋 Ausencias</div>
+    <div class="tab-item" data-tab="presencialidad"        onclick="goTab('presencialidad')">🏢 Presencialidad</div>
+    <div class="tab-item" data-tab="estudio"               onclick="goTab('estudio')">📚 Licencias</div>
+    <div class="tab-item" data-tab="eventos"               onclick="goTab('eventos')">🎂 Eventos</div>
+    <div class="tab-item" data-tab="flota"                 onclick="goTab('flota')">📱 Flota Móviles</div>
+    <div class="tab-item" data-tab="people"                onclick="goTab('people')">🪪 People</div>
+  </nav>
+
+  <!-- ── PANELS ───────────────────────────────────────────────── -->
+  <main class="px-7 py-7">
+
+    <!-- DASHBOARD -->
+    <section id="panel-dashboard" class="panel-content active">
+      <div class="flex items-start justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 class="font-poppins text-[34px] font-bold text-primary leading-tight tracking-tight">Resumen</h1>
+          <p class="text-[15px] text-ci-muted mt-1" id="dash-subtitle">Cargando…</p>
+        </div>
+      </div>
+      <!-- KPI row -->
+      <div class="flex gap-3.5 mb-6 flex-wrap">
+        <div class="kpi-card">
+          <div class="text-xl mb-2">👥</div>
+          <div class="font-poppins text-[10px] font-bold text-ci-muted uppercase tracking-widest mb-1.5">Equipo activo</div>
+          <div id="k-activos" class="font-poppins text-[30px] font-extrabold text-primary leading-none">—</div>
+          <div class="text-[11px] text-ci-muted mt-1">personas activas</div>
+        </div>
+        <div class="kpi-card">
+          <div class="text-xl mb-2">📋</div>
+          <div class="font-poppins text-[10px] font-bold text-ci-muted uppercase tracking-widest mb-1.5">Ausencias este mes</div>
+          <div id="k-ausmes" class="font-poppins text-[30px] font-extrabold leading-none" style="color:var(--red)">—</div>
+          <div class="text-[11px] text-ci-muted mt-1">días acumulados</div>
+        </div>
+        <div class="kpi-card">
+          <div class="text-xl mb-2">🎂</div>
+          <div class="font-poppins text-[10px] font-bold text-ci-muted uppercase tracking-widest mb-1.5">Próx. cumpleaños</div>
+          <div id="k-proxcump" class="font-poppins text-[30px] font-extrabold text-primary leading-none">—</div>
+          <div id="k-proxcump-sub" class="text-[11px] text-ci-muted mt-1">días restantes</div>
+        </div>
+        <div class="kpi-card">
+          <div class="text-xl mb-2">🌴</div>
+          <div class="font-poppins text-[10px] font-bold text-ci-muted uppercase tracking-widest mb-1.5">En vacaciones</div>
+          <div id="k-envac" class="font-poppins text-[30px] font-extrabold leading-none" style="color:var(--green)">—</div>
+          <div class="text-[11px] text-ci-muted mt-1">esta semana</div>
+        </div>
+      </div>
+      <!-- Cards grid 2 col -->
+      <div class="grid grid-cols-2 gap-5 mt-1" id="dash-grid">
+        <div class="card"><div class="card-title">🏢 Estado del equipo hoy</div><div id="dash-team-hoy"></div></div>
+        <div class="card"><div class="card-title">📅 Próximos eventos</div><div id="dash-proximos"></div></div>
+        <div class="card"><div class="card-title">🌴 Saldo vacaciones</div><div id="dash-vac"></div></div>
+        <div class="card"><div class="card-title">📊 Distribución por área</div><div id="dash-areas"></div></div>
+      </div>
+    </section>
+
+    <!-- LEGAJO / EQUIPO -->
+    <section id="panel-equipo" class="panel-content hidden">
+      <div class="flex items-start justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 class="font-poppins text-[34px] font-bold text-primary leading-tight tracking-tight">Legajo</h1>
+          <p class="text-[15px] text-ci-muted mt-1">Registro de empleados Contexto Investments</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-accent" onclick="toggleForm('form-equipo')">+ Nuevo empleado</button>
+        </div>
+      </div>
+      <div id="form-equipo" class="hidden card mb-5 shadow-[0_4px_20px_rgba(13,66,89,.09)]">
+        <div class="font-poppins text-[14px] font-semibold text-primary mb-4 pb-3 border-b border-ci-border flex items-center gap-2">
+          ➕ Nuevo empleado
+        </div>
+        <div class="grid gap-3.5" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+          <div><label class="field-label">Nombre completo</label><input class="field-input" id="fe-nombre" placeholder="APELLIDO, Nombre"></div>
+          <div><label class="field-label">Puesto</label><input class="field-input" id="fe-puesto" placeholder="Financial Advisor"></div>
+          <div><label class="field-label">Área</label>
+            <select class="field-input" id="fe-area">
+              <option value="">— Seleccionar —</option>
+              <option>Administración</option><option>Comercial</option>
+              <option>Dirección</option><option>Finanzas</option><option>Operaciones</option>
+            </select>
+          </div>
+          <div><label class="field-label">Fecha ingreso</label><input type="date" class="field-input" id="fe-ingreso"></div>
+          <div><label class="field-label">Nacimiento</label><input type="date" class="field-input" id="fe-nacimiento"></div>
+          <div><label class="field-label">Modalidad</label>
+            <select class="field-input" id="fe-modalidad">
+              <option>Presencial</option><option>Híbrido</option><option>Remoto</option>
+            </select>
+          </div>
+          <div><label class="field-label">Email</label><input type="email" class="field-input" id="fe-email"></div>
+          <div><label class="field-label">DNI</label><input class="field-input" id="fe-dni"></div>
+          <div><label class="field-label">Celular</label><input class="field-input" id="fe-celular"></div>
+          <div><label class="field-label">Contacto emergencia</label><input class="field-input" id="fe-emergencia" placeholder="Tel + Nombre (vínculo)"></div>
+          <div style="grid-column:1/-1"><label class="field-label">Dirección</label><input class="field-input" id="fe-direccion"></div>
+        </div>
+        <div class="flex gap-2 mt-5 justify-end">
+          <button class="btn btn-outline" onclick="toggleForm('form-equipo')">Cancelar</button>
+          <button class="btn btn-accent" onclick="guardarEmpleado()">Guardar empleado</button>
+        </div>
+      </div>
+      <div class="tbl-card">
+        <div class="tbl-toolbar">
+          <span class="font-poppins text-[13px] font-semibold text-primary">Empleados</span>
+          <div class="flex gap-2 flex-wrap">
+            <input class="field-input w-44" id="eq-search" placeholder="Buscar…" oninput="renderEquipo()">
+            <select class="field-input w-32" id="eq-area" onchange="renderEquipo()">
+              <option value="">Todas las áreas</option>
+              <option>Administración</option><option>Comercial</option>
+              <option>Dirección</option><option>Finanzas</option><option>Operaciones</option>
+            </select>
+            <select class="field-input w-28" id="eq-estado" onchange="renderEquipo()">
+              <option value="">Todo</option><option>Activo</option><option>Inactivo</option>
+            </select>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr>
+                <th class="tbl-th">Nombre</th>
+                <th class="tbl-th">Puesto</th>
+                <th class="tbl-th">Área</th>
+                <th class="tbl-th">Ingreso</th>
+                <th class="tbl-th">Modalidad</th>
+                <th class="tbl-th">Estado</th>
+                <th class="tbl-th"></th>
+              </tr>
+            </thead>
+            <tbody id="equipo-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VACACIONES -->
+    <section id="panel-vacaciones" class="panel-content hidden">
+      <div class="flex items-start justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 class="font-poppins text-[34px] font-bold text-primary leading-tight tracking-tight">Vacaciones</h1>
+          <p class="text-[15px] text-ci-muted mt-1">Registro y saldos · Política CI 2025</p>
+        </div>
+        <button class="btn btn-accent" onclick="toggleForm('form-vac')">+ Registrar</button>
+      </div>
+      <div id="form-vac" class="hidden card mb-5 shadow-[0_4px_20px_rgba(13,66,89,.09)]">
+        <div class="font-poppins text-[14px] font-semibold text-primary mb-4 pb-3 border-b border-ci-border">🌴 Nueva solicitud de vacaciones</div>
+        <div class="grid gap-3.5" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+          <div><label class="field-label">Empleado</label><select class="field-input" id="fv-emp"></select></div>
+          <div><label class="field-label">Desde</label><input type="date" class="field-input" id="fv-desde"></div>
+          <div><label class="field-label">Hasta</label><input type="date" class="field-input" id="fv-hasta"></div>
+          <div><label class="field-label">Días</label><input type="number" class="field-input" id="fv-dias" min="1" placeholder="Auto-calculado"></div>
+          <div style="grid-column:1/-1"><label class="field-label">Notas</label><input class="field-input" id="fv-notas"></div>
+        </div>
+        <div class="flex gap-2 mt-5 justify-end">
+          <button class="btn btn-outline" onclick="toggleForm('form-vac')">Cancelar</button>
+          <button class="btn btn-accent" onclick="guardarVacacion()">Guardar</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card"><div class="card-title">📊 Saldo por empleado — 2025</div><div id="vac-saldos"></div></div>
+        <div>
+          <div class="tbl-card">
+            <div class="tbl-toolbar"><span class="font-poppins text-[13px] font-semibold text-primary">Historial</span></div>
+            <table class="w-full border-collapse">
+              <thead><tr>
+                <th class="tbl-th">Empleado</th><th class="tbl-th">Desde</th>
+                <th class="tbl-th">Hasta</th><th class="tbl-th">Días</th><th class="tbl-th"></th>
+              </tr></thead>
+              <tbody id="vac-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AUSENCIAS -->
+    <section id="panel-ausencias" class="panel-content hidden">
+      <div class="flex items-start justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 class="font-poppins text-[34px] font-bold text-primary leading-tight tracking-tight">Ausencias y Licencias</h1>
+          <p class="text-[15px] text-ci-muted mt-1">Registro de inasistencias, licencias especiales y justificaciones</p>
+        </div>
+        <button class="btn btn-accent" onclick="toggleForm('form-aus')">+ Registrar</button>
+      </div>
+      <div id="form-aus" class="hidden card mb-5 shadow-[0_4px_20px_rgba(13,66,89,.09)]">
+        <div class="font-poppins text-[14px] font-semibold text-primary mb-4 pb-3 border-b border-ci-border">📋 Nueva ausencia</div>
+        <div class="grid gap-3.5" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+          <div><label class="field-label">Empleado</label><select class="field-input" id="fa-emp"></select></div>
+          <div><label class="field-label">Tipo</label>
+            <select class="field-input" id="fa-tipo">
+              <option>Inasistencia</option><option>Licencia médica</option>
+              <option>Licencia especial</option><option>Duelo</option><option>Maternidad / Paternidad</option><option>Otro</option>
+            </select>
+          </div>
+          <div><label class="field-label">Desde</label><input type="date" class="field-input" id="fa-desde"></div>
+          <div><label class="field-label">Hasta</label><input type="date" class="field-input" id="fa-hasta"></div>
+          <div><label class="field-label">Días</label><input type="number" class="field-input" id="fa-dias" min="1"></div>
+          <div><label class="field-label">Certificado</label>
+            <select class="field-input" id="fa-cert"><option>Sí</option><option>No</option><option>Pendiente</option></select>
+          </div>
+          <div style="grid-column:1/-1"><label class="field-label">Motivo / Notas</label><input class="field-input" id="fa-notas"></div>
+        </div>
+        <div class="flex gap-2 mt-5 justify-end">
+          <button class="btn btn-outline" onclick="toggleForm('form-aus')">Cancelar</button>
+          <button class="btn btn-accent" onclick="guardarAusencia()">Guardar</button>
+        </div>
+      </div>
+      <!-- KPI row -->
+      <div class="flex gap-3.5 mb-5 flex-wrap">
+        <div class="kpi-card"><div class="font-poppins text-[10px] font-bold text-ci-muted uppercase tracking-widest mb-1.5">Total este mes</div><div id="k-aus-t" class="font-poppins text-[30px] font-extrabold leading-none" style="color:var(--red)">0</div><div class="text-[11px] text-ci-muted mt-1">días acumulados</div></div>
+        <div class="kpi-card"><div class="font-poppins text-[10px] font-bold text-ci-muted uppercase tracking-widest mb-1.5">Con certificado</div><div id="k-aus-c" class="font-poppins text-[30px] font-extrabold leading-none" style="color:var(--green)">0</div><div class="text-[11px] text-ci-muted mt-1">justificadas</div></div>
+        <div class="kpi-card"><div class="font-poppins text-[10px] font-bold text-ci-muted uppercase tracking-widest mb-1.5">Sin documentación</div><div id="k-aus-s" class="font-poppins text-[30px] font-extrabold leading-none" style="color:var(--amber)">0</div><div class="text-[11px] text-ci-muted mt-1">a gestionar</div></div>
+      </div>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="tbl-card" style="grid-column:1/-1">
+          <div class="tbl-toolbar"><span class="font-poppins text-[13px] font-semibold text-primary">Registro</span>
+            <input class="field-input w-44" id="aus-search" placeholder="Buscar…" oninput="renderAusencias()">
+          </div>
+          <table class="w-full border-collapse">
+            <thead><tr>
+              <th class="tbl-th">Empleado</th><th class="tbl-th">Tipo</th>
+              <th class="tbl-th">Desde</th><th class="tbl-th">Hasta</th>
+              <th class="tbl-th">Días</th><th class="tbl-th">Cert.</th>
+              <th class="tbl-th">Notas</th><th class="tbl-th"></th>
+            </tr></thead>
+            <tbody id="aus-tbody"></tbody>
+          </table>
+        </div>
+        <div class="card"><div class="card-title">Por tipo</div><div id="aus-tipos"></div></div>
+        <div class="card"><div class="card-title">Por empleado</div><div id="aus-emps"></div></div>
+      </div>
+    </section>
+
+    <!-- PRESENCIALIDAD -->
+    <section id="panel-presencialidad" class="panel-content hidden">
+      <div class="flex items-start justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 class="font-poppins text-[34px] font-bold text-primary leading-tight tracking-tight">Presencialidad</h1>
+          <p class="text-[15px] text-ci-muted mt-1">Configuración permanente Lu–Vi · Clic para cambiar estado</p>
+        </div>
+      </div>
+      <div class="flex gap-3.5 mb-5 flex-wrap">
+        <div class="kpi-card"><div class="font-poppins text-[10px] font-bold text-ci-muted uppercase tracking-widest mb-1.5">Presenciales hoy</div><div id="k-p-hoy" class="font-poppins text-[30px] font-extrabold leading-none" style="color:var(--green)">—</div></div>
+        <div class="kpi-card"><div class="font-poppins text-[10px] font-bold text-ci-muted uppercase tracking-widest mb-1.5">Remotos hoy</div><div id="k-r-hoy" class="font-poppins text-[30px] font-extrabold leading-none" style="color:var(--accent)">—</div></div>
+        <div class="kpi-card"><div class="font-poppins text-[10px] font-bold text-ci-muted uppercase tracking-widest mb-1.5">Ausentes hoy</div><div id="k-a-hoy" class="font-poppins text-[30px] font-extrabold leading-none" style="color:var(--red)">—</div></div>
+      </div>
+      <div id="pres-grid" class="grid gap-3.5" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))"></div>
+      <!-- Leyenda -->
+      <div class="flex flex-wrap gap-4 mt-4">
+        <div class="flex items-center gap-1.5 text-[11px] text-ci-muted"><span class="w-3 h-3 rounded-sm bg-ci-green-bg border border-[#b0dcc0]"></span> Presencial</div>
+        <div class="flex items-center gap-1.5 text-[11px] text-ci-muted"><span class="w-3 h-3 rounded-sm bg-accent-bg border border-[#b0d4e2]"></span> Remoto</div>
+        <div class="flex items-center gap-1.5 text-[11px] text-ci-muted"><span class="w-3 h-3 rounded-sm bg-ci-red-bg border border-[#e8b0ac]"></span> Ausente</div>
+        <div class="flex items-center gap-1.5 text-[11px] text-ci-muted"><span class="w-3 h-3 rounded-sm bg-[#f0f3f6] border border-[#dde3ea]"></span> Libre / Sin dato</div>
+      </div>
+    </section>
+
+    <!-- ESTUDIO / LICENCIAS -->
+    <section id="panel-estudio" class="panel-content hidden">
+      <div class="flex items-start justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 class="font-poppins text-[34px] font-bold text-primary leading-tight tracking-tight">Licencias</h1>
+          <p class="text-[15px] text-ci-muted mt-1">Licencias educativas · Máximo 10 días por año</p>
+        </div>
+        <button class="btn btn-accent" onclick="toggleForm('form-est')">+ Registrar</button>
+      </div>
+      <div id="form-est" class="hidden card mb-5 shadow-[0_4px_20px_rgba(13,66,89,.09)]">
+        <div class="font-poppins text-[14px] font-semibold text-primary mb-4 pb-3 border-b border-ci-border">📚 Nueva licencia educativa</div>
+        <div class="grid gap-3.5" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+          <div><label class="field-label">Empleado</label><select class="field-input" id="fes-emp"></select></div>
+          <div><label class="field-label">Tipo</label>
+            <select class="field-input" id="fes-tipo">
+              <option>Examen — Grado</option><option>Examen — Posgrado</option>
+              <option>Cursada</option><option>Tesis / Tesina</option><option>Otro</option>
+            </select>
+          </div>
+          <div><label class="field-label">Institución</label><input class="field-input" id="fes-inst"></div>
+          <div><label class="field-label">Materia</label><input class="field-input" id="fes-mat"></div>
+          <div><label class="field-label">Fecha</label><input type="date" class="field-input" id="fes-fecha"></div>
+          <div><label class="field-label">Días</label><input type="number" class="field-input" id="fes-dias" min="1" max="10"></div>
+          <div><label class="field-label">Certificado</label>
+            <select class="field-input" id="fes-cert"><option>Sí</option><option>No</option><option>Pendiente</option></select>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-5 justify-end">
+          <button class="btn btn-outline" onclick="toggleForm('form-est')">Cancelar</button>
+          <button class="btn btn-accent" onclick="guardarEstudio()">Guardar</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card"><div class="card-title">📊 Días utilizados / disponibles</div><div id="est-saldos"></div></div>
+        <div>
+          <div class="tbl-card">
+            <div class="tbl-toolbar"><span class="font-poppins text-[13px] font-semibold text-primary">Historial</span></div>
+            <table class="w-full border-collapse">
+              <thead><tr>
+                <th class="tbl-th">Empleado</th><th class="tbl-th">Tipo</th>
+                <th class="tbl-th">Institución</th><th class="tbl-th">Fecha</th>
+                <th class="tbl-th">Días</th><th class="tbl-th">Cert.</th><th class="tbl-th"></th>
+              </tr></thead>
+              <tbody id="est-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EVENTOS -->
+    <section id="panel-eventos" class="panel-content hidden">
+      <div class="flex items-start justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 class="font-poppins text-[34px] font-bold text-primary leading-tight tracking-tight">Cumpleaños y Eventos</h1>
+          <p class="text-[15px] text-ci-muted mt-1">Fechas importantes del equipo CI</p>
+        </div>
+        <button class="btn btn-accent" onclick="toggleForm('form-ev')">+ Nuevo evento</button>
+      </div>
+      <div id="form-ev" class="hidden card mb-5 shadow-[0_4px_20px_rgba(13,66,89,.09)]">
+        <div class="font-poppins text-[14px] font-semibold text-primary mb-4 pb-3 border-b border-ci-border">🎂 Nuevo evento</div>
+        <div class="grid gap-3.5" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+          <div><label class="field-label">Tipo</label>
+            <select class="field-input" id="fev-tipo"><option>Cumpleaños</option><option>Aniversario CI</option><option>Otro</option></select>
+          </div>
+          <div><label class="field-label">Nombre del evento</label><input class="field-input" id="fev-nombre"></div>
+          <div><label class="field-label">Empleado vinculado</label><select class="field-input" id="fev-emp"><option value="">— Ninguno —</option></select></div>
+          <div><label class="field-label">Fecha</label><input type="date" class="field-input" id="fev-fecha"></div>
+          <div style="grid-column:1/-1"><label class="field-label">Notas</label><input class="field-input" id="fev-notas"></div>
+        </div>
+        <div class="flex gap-2 mt-5 justify-end">
+          <button class="btn btn-outline" onclick="toggleForm('form-ev')">Cancelar</button>
+          <button class="btn btn-accent" onclick="guardarEvento()">Guardar</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card"><div class="card-title">🎂 Próximos — 90 días</div><div id="ev-proximos"></div></div>
+        <div class="card"><div class="card-title">📅 Todos los eventos</div><div id="ev-todos"></div></div>
+      </div>
+    </section>
+
+    <!-- FLOTA -->
+    <section id="panel-flota" class="panel-content hidden">
+      <div class="flex items-start justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 class="font-poppins text-[34px] font-bold text-primary leading-tight tracking-tight">Flota Móviles</h1>
+          <p class="text-[15px] text-ci-muted mt-1">Líneas Movistar · Equipos y asignaciones</p>
+        </div>
+        <button class="btn btn-accent" onclick="toggleForm('form-flota')">+ Nueva línea</button>
+      </div>
+      <div id="form-flota" class="hidden card mb-5 shadow-[0_4px_20px_rgba(13,66,89,.09)]">
+        <div class="font-poppins text-[14px] font-semibold text-primary mb-4 pb-3 border-b border-ci-border">📱 Nueva línea</div>
+        <div class="grid gap-3.5" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+          <div><label class="field-label">Número</label><input class="field-input" id="ff-numero" placeholder="11XXXXXXXX"></div>
+          <div><label class="field-label">Rol / Descripción</label><input class="field-input" id="ff-rol"></div>
+          <div><label class="field-label">Usuario asignado</label><input class="field-input" id="ff-usuario" placeholder="Iniciales o nombre"></div>
+          <div><label class="field-label">Equipo / Dispositivo</label><input class="field-input" id="ff-equipo"></div>
+        </div>
+        <div class="flex gap-2 mt-5 justify-end">
+          <button class="btn btn-outline" onclick="toggleForm('form-flota')">Cancelar</button>
+          <button class="btn btn-accent" onclick="guardarFlota()">Guardar</button>
+        </div>
+      </div>
+      <div class="flex gap-3.5 mb-5 flex-wrap">
+        <div class="kpi-card"><div class="text-xl mb-2">📱</div><div class="font-poppins text-[10px] font-bold text-ci-muted uppercase tracking-widest mb-1.5">Líneas totales</div><div id="k-flota-total" class="font-poppins text-[30px] font-extrabold text-primary leading-none">0</div></div>
+        <div class="kpi-card"><div class="text-xl mb-2">👤</div><div class="font-poppins text-[10px] font-bold text-ci-muted uppercase tracking-widest mb-1.5">Asignadas</div><div id="k-flota-asig" class="font-poppins text-[30px] font-extrabold leading-none" style="color:var(--green)">0</div></div>
+        <div class="kpi-card"><div class="text-xl mb-2">📦</div><div class="font-poppins text-[10px] font-bold text-ci-muted uppercase tracking-widest mb-1.5">Disponibles</div><div id="k-flota-disp" class="font-poppins text-[30px] font-extrabold leading-none" style="color:var(--amber)">0</div></div>
+        <div class="kpi-card"><div class="text-xl mb-2">📟</div><div class="font-poppins text-[10px] font-bold text-ci-muted uppercase tracking-widest mb-1.5">Con equipo</div><div id="k-flota-eq" class="font-poppins text-[30px] font-extrabold leading-none" style="color:var(--accent)">0</div></div>
+      </div>
+      <div class="tbl-card">
+        <div class="tbl-toolbar"><span class="font-poppins text-[13px] font-semibold text-primary">Líneas Movistar</span></div>
+        <table class="w-full border-collapse">
+          <thead><tr>
+            <th class="tbl-th">#</th><th class="tbl-th">Número</th><th class="tbl-th">Rol</th>
+            <th class="tbl-th">Usuario</th><th class="tbl-th">Equipo</th><th class="tbl-th"></th>
+          </tr></thead>
+          <tbody id="flota-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PEOPLE -->
+    <section id="panel-people" class="panel-content hidden">
+      <div class="flex items-start justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 class="font-poppins text-[34px] font-bold text-primary leading-tight tracking-tight">People · Legajos</h1>
+          <p class="text-[15px] text-ci-muted mt-1">Historial personalizado · Resumen + notas libres</p>
+        </div>
+      </div>
+      <div class="grid gap-5" style="grid-template-columns:280px 1fr;align-items:start">
+        <!-- Sidebar -->
+        <div class="bg-white border border-ci-border rounded-card p-3.5 overflow-y-auto sticky top-[90px]"
+             style="max-height:calc(100vh - 220px)">
+          <input class="field-input mb-2.5" id="ppl-search" placeholder="Buscar empleado…" oninput="renderPeopleSidebar()">
+          <div id="ppl-list"></div>
+        </div>
+        <!-- Detalle -->
+        <div id="ppl-detail">
+          <div class="text-center py-20 text-ci-muted">
+            <div class="text-[42px] mb-3">🪪</div>
+            <div class="text-[15px]">Seleccioná un empleado para ver su legajo</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- TOAST -->
+<div id="toast"><span id="toast-msg"></span></div>
+
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>

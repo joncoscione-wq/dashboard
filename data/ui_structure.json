@@ -1,0 +1,461 @@
+{
+  "_meta": {
+    "descripcion": "Documento de referencia de diseño y estructura del dashboard RRHH v1. Usar para replicar el sistema en la versión con backend.",
+    "version_origen": "RRHH_ContextoInvestments.html (monolito localStorage)",
+    "fecha_extraccion": "2026-04-16"
+  },
+
+  "brand": {
+    "nombre": "Contexto Investments",
+    "sigla": "CI",
+    "fuentes": {
+      "titulos": "Poppins (weights: 400, 500, 600, 700, 800, 900)",
+      "cuerpo": "DM Sans (weights: 300, 400, 500, 600, 700)",
+      "proveedor": "Google Fonts"
+    },
+    "tokens_color": {
+      "paleta_oficial": {
+        "--primary":    "#0d4259",
+        "--accent":     "#186f8a",
+        "--gray":       "#6e6e6d",
+        "--taupe":      "#a5a08e"
+      },
+      "variaciones": {
+        "--primary-90": "#154e69",
+        "--primary-70": "#2a6884",
+        "--accent-bg":  "#e4f2f7",
+        "--taupe-bg":   "#f5f2ed",
+        "--taupe-light":"#ece9e3"
+      },
+      "sistema_ui": {
+        "--bg":         "#f3f4f6",
+        "--surface":    "#ffffff",
+        "--border":     "#dde1e8",
+        "--border2":    "#c6ccd6",
+        "--text":       "#0d2d3e",
+        "--text2":      "#3d4f5c",
+        "--muted":      "#7a8899"
+      },
+      "semanticos": {
+        "--green":      "#1a7a4a",
+        "--green-bg":   "#e5f5ec",
+        "--red":        "#b83228",
+        "--red-bg":     "#fceeed",
+        "--amber":      "#a34f00",
+        "--amber-bg":   "#fef2e0"
+      }
+    },
+    "logo": {
+      "archivo": "Logo.png",
+      "tratamiento": "Procesado via canvas en runtime para aplicar alpha-mask blanco puro (topbar oscuro). La imagen se revela con transición opacity 0→1 una vez procesada.",
+      "altura_topbar": "66px"
+    }
+  },
+
+  "layout_global": {
+    "estructura": "topbar fijo (sticky) → barra de tabs → panel activo",
+    "fondo_app": "#f3f4f6",
+    "font_size_base": "13px",
+    "topbar": {
+      "altura": "76px",
+      "fondo": "var(--primary) #0d4259",
+      "borde_inferior": "3px solid var(--accent)",
+      "z_index": 200,
+      "posicion": "sticky top:0",
+      "padding": "0 28px",
+      "secciones": ["logo + divisor + nombre/subtitulo", "buscador global (max 380px)", "fecha actual + badge empresa + botón exportar"]
+    },
+    "barra_tabs": {
+      "fondo": "var(--primary-90) #154e69",
+      "padding": "0 24px",
+      "overflow": "auto horizontal con scrollbar de 3px",
+      "borde_inferior": "1px solid rgba(255,255,255,.07)"
+    },
+    "panel_contenido": {
+      "padding": "26px 28px",
+      "display": "solo el panel activo es visible (class 'active')"
+    }
+  },
+
+  "topbar_componentes": {
+    "logo_area": {
+      "elementos": ["imagen logo (procesada canvas)", "divisor vertical 1px rgba(255,255,255,.18)", "texto 'Contexto Investments' Poppins 22px bold + subtítulo 'RECURSOS HUMANOS' DM Sans 13px uppercase letter-spacing 2.8px"]
+    },
+    "buscador_global": {
+      "placeholder": "Buscar empleado, área, evento…",
+      "atajo_teclado": "Ctrl+K",
+      "estilo_input": "fondo rgba(255,255,255,.1), borde rgba(255,255,255,.15), texto blanco, enfoque borde var(--accent)",
+      "dropdown_resultados": {
+        "max_height": "420px",
+        "secciones_posibles": ["Empleados", "Vacaciones", "Ausencias", "Eventos"],
+        "item": "ícono 30x30px + título (con mark highlight) + subtítulo + tag de tipo",
+        "navegacion": "teclado ↑↓ + Enter para ir al registro"
+      }
+    },
+    "topbar_right": {
+      "fecha_actual": "formato 'Miércoles 16 de Abril 2026', DM Sans 15px, blanco 60%",
+      "badge_empresa": "fondo rgba(24,111,138,.2), texto blanco 75%, border-radius 20px",
+      "boton_exportar": {
+        "label": "↓ Exportar",
+        "accion": "descarga JSON completo del DB (CI_RRHH_YYYY-MM-DD.json)",
+        "estilo": "fondo var(--accent), hover var(--primary-70)"
+      }
+    }
+  },
+
+  "navegacion_tabs": {
+    "comportamiento": "drag & drop para reordenar (orden persistido en localStorage con key 'ci_tabs_order')",
+    "tab_activo": "texto blanco, borde inferior 2px var(--accent)",
+    "tab_inactivo": "texto rgba(255,255,255,.42), hover rgba(255,255,255,.75)",
+    "indicador_drag": "línea vertical 3px var(--accent) con glow, aparece before/after del target",
+    "tabs": [
+      { "id": "dashboard",       "label": "Resumen",             "icono": "📊", "badge": false,  "orden_default": 1 },
+      { "id": "equipo",          "label": "Legajo",              "icono": "👥", "badge": true,   "badge_id": "tbadge-equipo", "orden_default": 2 },
+      { "id": "vacaciones",      "label": "Vacaciones",          "icono": "🌴", "badge": false,  "orden_default": 3 },
+      { "id": "ausencias",       "label": "Ausencias",           "icono": "📋", "badge": false,  "orden_default": 4 },
+      { "id": "presencialidad",  "label": "Presencialidad",      "icono": "🏢", "badge": false,  "orden_default": 5 },
+      { "id": "estudio",         "label": "Licencias",           "icono": "📚", "badge": false,  "orden_default": 6 },
+      { "id": "eventos",         "label": "Cumpleaños y Eventos","icono": "🎂", "badge": false,  "orden_default": 7 },
+      { "id": "flota",           "label": "Flota Móviles",       "icono": "📱", "badge": false,  "orden_default": 8 },
+      { "id": "people",          "label": "People · Legajos",    "icono": "🪪", "badge": false,  "orden_default": 9 }
+    ]
+  },
+
+  "componentes_ui": {
+    "kpi_card": {
+      "descripcion": "Tarjeta de métrica clave. Franja vertical de 3px var(--accent) a la izquierda.",
+      "estructura": ["ícono (20px)", "label (Poppins 10px uppercase muted)", "valor (Poppins 30px 800 primary)", "sub-texto (DM Sans 11px muted)"],
+      "fondo": "var(--surface)",
+      "border_radius": "12px",
+      "padding": "20px 22px",
+      "min_width": "130px",
+      "flex": "1 (row con flex-wrap)"
+    },
+    "card_generica": {
+      "fondo": "var(--surface)",
+      "border_radius": "12px",
+      "border": "1px solid var(--border)",
+      "padding": "20px",
+      "shadow": "0 1px 5px rgba(13,66,89,.05)",
+      "card_title": "Poppins 13px 600 primary, con ícono emoji a la izquierda"
+    },
+    "tabla": {
+      "contenedor": "tbl-card: surface, radius 12px, overflow hidden",
+      "toolbar": "padding 14px 18px, título Poppins 13px + controles (search input + select filtro + botones)",
+      "thead": "fondo #f0f3f6, Poppins 10px 600 muted uppercase letter-spacing 1px",
+      "tbody_row": "hover fondo var(--accent-bg), borde separador #f0f3f6",
+      "td_padding": "11px 16px",
+      "columnas_ordenables": "indicador ↕ / ▲ / ▼ en color var(--accent)",
+      "edicion_inline": "campos con clase eq-edit: border transparent→accent en focus, fondo transparente→blanco"
+    },
+    "badges": {
+      "b-primary": "fondo accent-bg, texto primary",
+      "b-accent":  "fondo rgba(24,111,138,.12), texto accent",
+      "b-green":   "fondo green-bg, texto green",
+      "b-red":     "fondo red-bg, texto red",
+      "b-amber":   "fondo amber-bg, texto amber",
+      "b-taupe":   "fondo taupe-bg, texto #6b5f4a",
+      "b-gray":    "fondo #f0f3f6, texto #6a7380",
+      "border_radius": "20px",
+      "padding": "3px 10px",
+      "font": "DM Sans 11px 600"
+    },
+    "botones": {
+      "btn-primary": "fondo primary, texto blanco",
+      "btn-accent":  "fondo accent, texto blanco",
+      "btn-outline": "fondo surface, borde border2, texto primary → hover borde/texto accent",
+      "btn-sm": "padding 6px 12px, font 11px",
+      "border_radius": "7px",
+      "font": "DM Sans 12px 600"
+    },
+    "formulario_panel": {
+      "descripcion": "Panel expansible encima de la tabla, aparece al clickear '+ Nuevo'",
+      "comportamiento": "toggle class 'open' (display none→block)",
+      "fondo": "var(--surface)",
+      "border_radius": "12px",
+      "shadow": "0 4px 20px rgba(13,66,89,.09)",
+      "form_grid": "repeat(auto-fit, minmax(190px, 1fr)) gap 14px",
+      "labels": "Poppins 10px 600 muted uppercase",
+      "inputs": "DM Sans 13px, border 1.5px border, radius 7px, focus→accent"
+    },
+    "modal": {
+      "overlay": "rgba(13,66,89,.5) + backdrop-filter blur(2px)",
+      "card": "blanco, radius 14px, max-width 680px, shadow 0 18px 60px rgba(0,0,0,.25)",
+      "animacion": "modalIn: opacity 0→1 + translateY(10px)→0 + scale(.98)→1, 0.18s ease",
+      "estructura": ["modal-head (título + botón cerrar)", "modal-body (contenido)", "modal-actions (botones, fondo bg, border-top)"]
+    },
+    "notificacion_toast": {
+      "posicion": "fixed bottom-right 24px",
+      "fondo": "var(--primary)",
+      "borde_izq": "4px solid var(--accent)",
+      "animacion": "translateY(80px)→0 + opacity 0→1, 0.3s",
+      "boton_undo": "barra de progreso 5s linear que indica tiempo restante para deshacer"
+    },
+    "calendario": {
+      "header": "fondo primary, nav con botones ‹ ›",
+      "dias_semana": "Poppins 9px uppercase",
+      "colores_celdas": {
+        "hoy":       "fondo primary, texto blanco",
+        "vacacion":  "fondo green-bg, texto green",
+        "ausencia":  "fondo red-bg, texto red",
+        "cumpleaños":"fondo taupe-bg, texto #6b5540",
+        "estudio":   "fondo accent-bg, texto accent",
+        "evento":    "fondo amber-bg, texto amber"
+      }
+    },
+    "team_pills": {
+      "descripcion": "Chips de estado de cada empleado en el dashboard de resumen",
+      "estructura": "avatar circular 24px (iniciales o foto) + nombre",
+      "colores_por_estado": {
+        "presencial": "b-green (borde green)",
+        "remoto":     "b-accent (borde accent)",
+        "ausente":    "b-red (borde red)",
+        "sin_dato":   "b-gray"
+      },
+      "hover": "translateY(-1px) + box-shadow"
+    },
+    "presencialidad_cards": {
+      "descripcion": "Grid de tarjetas, una por empleado, con 5 celdas Lu-Vi clickeables",
+      "estados_celda": {
+        "presencial": "green-bg / green / borde #b0dcc0",
+        "remoto":     "accent-bg / accent / borde #b0d4e2",
+        "ausente":    "red-bg / red / borde #e8b0ac",
+        "libre":      "#f0f3f6 / #c0c8d0 / borde #dde3ea"
+      },
+      "hover_celda": "scale(1.08)",
+      "ciclo_click": "libre → presencial → remoto → ausente → libre"
+    },
+    "people_legajos": {
+      "layout": "sidebar 280px sticky (lista empleados) + panel detalle flexible",
+      "sidebar": {
+        "search": "input con border, radius 7px, focus accent",
+        "item_activo": "fondo accent-bg, borde izq 3px accent",
+        "item_hover": "fondo accent-bg"
+      },
+      "hero_card": {
+        "fondo": "linear-gradient(135deg, primary 0%, accent 100%)",
+        "decoracion": "círculo blur bottom-right rgba(255,255,255,.06)",
+        "avatar": "84px, circular, fondo rgba(255,255,255,.15), iniciales Poppins 28px 800 o foto",
+        "nombre": "Poppins 22px 800",
+        "rol": "13px opacity .85"
+      },
+      "stats_grid": "auto-fit minmax(160px, 1fr)",
+      "notas_timeline": {
+        "linea_vertical": "2px border izquierda",
+        "nota": "fondo bg, borde izq 3px accent, dot circular en la línea",
+        "categorias": "tag Poppins 9.5px uppercase",
+        "boton_eliminar": "hover color red, fondo red-bg"
+      }
+    },
+    "eventos_ev_card": {
+      "estructura": "fecha-box cuadrado 46x46 (primary, día grande + mes pequeño) + info (nombre + tipo) + countdown días",
+      "hover": "borde accent, fondo accent-bg"
+    },
+    "lock_screen": {
+      "descripcion": "Pantalla de bloqueo PIN 4 dígitos al iniciar sesión",
+      "fondo": "radial-gradient(accent tenue) + linear-gradient(#0a3043→primary→#072736)",
+      "card": "glassmorphism: rgba(255,255,255,.055) + backdrop-filter blur(14px), radius 20px",
+      "dots": "4 círculos 16px: vacíos borde rgba(255,255,255,.32) → rellenos con accent + scale(1.12)",
+      "animaciones": "lockFadeIn (entrada) / lockFadeOut scale(1.03) + opacity 0 (salida exitosa)",
+      "teclado_numerico": "grid de dígitos 0-9 + backspace, botones con glassmorphism"
+    }
+  },
+
+  "panels": {
+    "dashboard": {
+      "titulo": "Resumen",
+      "layout": "KPI row (3 métricas) + dash-grid 2 columnas drag&drop (4 cards reordenables)",
+      "kpis": [
+        { "id": "k-activos",  "label": "Equipo activo",         "unidad": "personas activas" },
+        { "id": "k-ausmes",   "label": "Ausencias este mes",    "unidad": "días acumulados" },
+        { "id": "k-proxcump", "label": "Próx. cumpleaños",      "unidad": "días restantes" }
+      ],
+      "cards_draggables": [
+        { "id": "hoy",      "titulo": "🏢 Estado del equipo hoy",      "componente": "team_pills" },
+        { "id": "proximos", "titulo": "📅 Próximos eventos del equipo", "componente": "ev_list" },
+        { "id": "vac",      "titulo": "🌴 Saldo vacaciones",           "componente": "progress_bars por empleado" },
+        { "id": "areas",    "titulo": "📊 Distribución por área",      "componente": "progress_bars por area" }
+      ],
+      "persistencia_orden": "localStorage key 'ci_dash_order'"
+    },
+    "equipo": {
+      "titulo": "Legajo",
+      "subtitulo": "Registro de empleados Contexto Investments",
+      "layout": "formulario expansible + tabla con filtros",
+      "formulario_campos": ["Nombre completo", "Puesto", "Área", "Fecha ingreso", "Modalidad", "Email", "Dirección", "Estado"],
+      "tabla_columnas": ["Nombre", "Puesto", "Área", "Ingreso", "Modalidad", "Estado", "Acciones"],
+      "filtros": ["búsqueda texto libre", "select área", "select estado"],
+      "tabla_features": ["ordenamiento por columnas", "edición inline en todas las celdas", "badge de estado Activo/Inactivo"]
+    },
+    "vacaciones": {
+      "titulo": "Vacaciones",
+      "subtitulo": "Registro y saldos · Política CI 2025",
+      "layout": "formulario + card saldo por empleado (progress bars) + tabla historial",
+      "formulario_campos": ["Empleado", "Desde", "Hasta", "Días", "Notas"],
+      "saldo_card": {
+        "titulo": "📊 Saldo por empleado — 2025",
+        "componente": "progress bars con días usados / total disponible"
+      },
+      "tabla_columnas": ["Empleado", "Desde", "Hasta", "Días", "Notas", "Acciones"]
+    },
+    "ausencias": {
+      "titulo": "Ausencias y Licencias",
+      "subtitulo": "Registro de inasistencias, licencias especiales y justificaciones",
+      "layout": "formulario + KPI row + tabla + cards resumen",
+      "kpis": [
+        { "id": "k-aus-t", "label": "Total ausencias este mes", "color": "red",   "unidad": "días acumulados" },
+        { "id": "k-aus-c", "label": "Con certificado",          "color": "green", "unidad": "justificadas" },
+        { "id": "k-aus-s", "label": "Sin documentación",        "color": "amber", "unidad": "a gestionar" }
+      ],
+      "formulario_campos": ["Empleado", "Tipo", "Desde", "Hasta", "Días", "Certificado (Sí/No)", "Motivo/Notas"],
+      "tabla_columnas": ["Empleado", "Tipo", "Desde", "Hasta", "Días", "Cert.", "Notas", "Acciones"],
+      "cards_resumen": [
+        { "titulo": "Por tipo",     "componente": "progress bars por tipo de ausencia" },
+        { "titulo": "Por empleado", "componente": "progress bars por empleado" }
+      ]
+    },
+    "presencialidad": {
+      "titulo": "Presencialidad",
+      "subtitulo": "Configuración permanente Lu–Vi · Persiste hasta que se cambie manualmente",
+      "layout": "KPI row + controles de semana + grid de tarjetas por empleado",
+      "kpis": [
+        { "id": "k-p-hoy", "label": "Presenciales hoy", "color": "green" },
+        { "id": "k-r-hoy", "label": "Remotos hoy",      "color": "accent" },
+        { "id": "k-a-hoy", "label": "Ausentes hoy",     "color": "red" }
+      ],
+      "celda_semana": {
+        "dias": ["Lun", "Mar", "Mié", "Jue", "Vie"],
+        "estados": ["presencial", "remoto", "ausente", "libre"],
+        "interaccion": "click cicla entre los 4 estados"
+      }
+    },
+    "estudio": {
+      "titulo": "Licencias",
+      "subtitulo": "Licencias educativas · Máximo 10 días por año",
+      "layout": "formulario + card saldo (progress bars) + tabla historial",
+      "formulario_campos": ["Empleado", "Tipo de licencia", "Institución", "Materia", "Fecha", "Días", "Certificado"],
+      "saldo_card": {
+        "titulo": "📊 Días utilizados / disponibles por empleado",
+        "limite_anual": 10
+      },
+      "tabla_columnas": ["Empleado", "Tipo", "Institución", "Materia", "Fecha", "Días", "Cert.", "Acciones"]
+    },
+    "eventos": {
+      "titulo": "Cumpleaños y Eventos",
+      "subtitulo": "Fechas importantes del equipo CI · Integración Google Calendar / Outlook / Gmail",
+      "layout": "formulario + two-col (próximos 90 días + todos los eventos) + acciones de invitación",
+      "formulario_campos": ["Tipo", "Nombre del evento", "Empleado vinculado", "Fecha", "Notas"],
+      "card_proximos": {
+        "titulo": "🎂 Próximos cumpleaños — 90 días",
+        "componente": "ev_card con fecha-box + countdown"
+      },
+      "card_todos": {
+        "titulo": "📅 Todos los eventos",
+        "componente": "ev_card + botones de acción (invitar GCal/Outlook/Gmail)"
+      },
+      "integracion_calendario": {
+        "modal": "permite seleccionar destinatarios + genera link para GCal, archivo .ics para Outlook, y mailto para Gmail",
+        "acciones_por_evento": ["📅 Google Calendar", "📆 Outlook (.ics)", "✉️ Gmail"]
+      }
+    },
+    "flota": {
+      "titulo": "Flota Móviles",
+      "subtitulo": "Líneas Movistar · Equipos y asignaciones",
+      "layout": "formulario + KPI row + tabla",
+      "kpis": [
+        { "id": "k-flota-total", "label": "Líneas totales",  "icono": "📱", "color": "primary" },
+        { "id": "k-flota-asig",  "label": "Asignadas",       "icono": "👤", "color": "green" },
+        { "id": "k-flota-disp",  "label": "Disponibles",     "icono": "📦", "color": "amber" },
+        { "id": "k-flota-eq",    "label": "Con equipo",      "icono": "📟", "color": "accent" }
+      ],
+      "formulario_campos": ["Número de línea", "Rol/Descripción", "Usuario asignado", "Equipo/Dispositivo"],
+      "tabla_columnas": ["#", "Número", "Rol", "Usuario", "Equipo", "Acciones"],
+      "tabla_features": ["edición inline en todas las celdas", "ordenamiento por columnas"]
+    },
+    "people": {
+      "titulo": "People · Legajos",
+      "subtitulo": "Historial personalizado · Resumen actualizado + notas libres",
+      "layout": "ppl-layout: sidebar 280px (sticky, lista empleados con búsqueda) + panel detalle",
+      "panel_detalle": {
+        "hero": "gradient primary→accent, avatar circular 84px (iniciales/foto), nombre, rol, meta-datos",
+        "fotos": "botones 'Subir foto' y 'Quitar foto' dentro del hero",
+        "stats_grid": "auto-fit minmax(160px) con métricas dinámicas del empleado",
+        "seccion_resumen": {
+          "titulo": "📊 Resumen actualizado",
+          "datos": ["Vacaciones tomadas / disponibles", "Ausencias del año", "Días de licencia usados", "Estado presencialidad habitual"]
+        },
+        "seccion_notas": {
+          "titulo": "📝 Notas y observaciones",
+          "formulario": "select categoría + textarea + botón agregar",
+          "categorias_nota": ["General", "Feedback", "Advertencia", "Reconocimiento", "Administrativo", "Otro"],
+          "timeline": "notas ordenadas cronológicamente, cada una con categoría badge + fecha + texto + botón eliminar"
+        }
+      }
+    }
+  },
+
+  "interacciones_globales": {
+    "busqueda_global": {
+      "atajo": "Ctrl+K",
+      "scope": "empleados, vacaciones, ausencias, eventos",
+      "resultado": "navega al tab correspondiente y abre el registro"
+    },
+    "drag_and_drop_tabs": "reordenamiento persistido en localStorage",
+    "drag_and_drop_dashboard_cards": "reordenamiento de las 4 cards del resumen, persistido en localStorage",
+    "edicion_inline_tablas": {
+      "descripcion": "Todas las celdas de Legajo y Flota son editables directamente en la tabla sin abrir modal",
+      "trigger": "click / focus en el campo",
+      "guardado": "automático al perder el foco (blur) → saveDB()"
+    },
+    "undo_toast": {
+      "descripcion": "Al eliminar un registro aparece toast con botón DESHACER",
+      "duracion": "5 segundos (barra de progreso visual en el botón)",
+      "mecanismo": "el item se marca como 'pendiente de eliminar', solo se borra definitivamente si no se deshace"
+    },
+    "lock_screen_pin": {
+      "descripcion": "Pantalla PIN de 4 dígitos al cargar la app",
+      "hash": "PIN hasheado en localStorage (key 'ci_lock')",
+      "intentos_max": "3 intentos, luego bloqueo temporal",
+      "primer_uso": "si no hay PIN configurado, muestra modal de configuración"
+    },
+    "exportar_json": {
+      "trigger": "botón '↓ Exportar' en topbar",
+      "contenido": "DB completo (emp, vac, aus, pres, est, ev, flota, notes)",
+      "nombre_archivo": "CI_RRHH_YYYY-MM-DD.json"
+    }
+  },
+
+  "responsividad": {
+    "breakpoint_mobile": "900px",
+    "cambios_en_mobile": [
+      "dash-grid: 2 columnas → 1 columna",
+      "two-col / three-col: → 1 columna",
+      "ppl-layout: sidebar+detalle → 1 columna apilada",
+      "ph-title: 34px → 24px → 22px",
+      "topbar: ajuste de tamaños"
+    ]
+  },
+
+  "persistencia_actual": {
+    "mecanismo": "localStorage del navegador",
+    "key_principal": "ci_rrhh_v3",
+    "contenido": "objeto DB completo serializado como JSON",
+    "otras_keys": [
+      "ci_tabs_order (orden de tabs)",
+      "ci_dash_order (orden de cards del dashboard)",
+      "ci_lock (hash del PIN)",
+      "ci_lock_attempts (contador de intentos fallidos)",
+      "ci_rrhh_seed_migration_v4_safe (flag de migración)"
+    ],
+    "nota_migracion": "El sistema tiene lógica FILL-ONLY: al iniciar rellena campos vacíos del empleado con los valores del SEED sin pisar datos cargados por el usuario"
+  },
+
+  "arquitectura_destino_sugerida": {
+    "backend": "Python (FastAPI) o Node.js (Express)",
+    "db": "SQLite (desarrollo) → PostgreSQL (producción)",
+    "tablas_sugeridas": ["empleados", "vacaciones", "ausencias", "presencialidad", "estudio", "eventos", "flota", "notas_people"],
+    "frontend": "HTML/JS desacoplado que consume API REST, o framework liviano (Vue / React)",
+    "autenticacion": "reemplazar PIN localStorage por sesión server-side o JWT simple",
+    "archivos_estaticos": ["Logo.png", "imágenes manuales de marca"]
+  }
+}

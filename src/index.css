@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Brand tokens from ui_structure.json ── */
+:root {
+  /* Paleta oficial */
+  --primary:    #0d4259;
+  --accent:     #186f8a;
+  --gray:       #6e6e6d;
+  --taupe:      #a5a08e;
+  
+  /* Variaciones */
+  --primary-90: #154e69;
+  --primary-70: #2a6884;
+  --accent-bg:  #e4f2f7;
+  --taupe-bg:   #f5f2ed;
+  --taupe-light:#ece9e3;
+  
+  /* Sistema UI */
+  --ci-bg:         #f3f4f6;
+  --ci-surface:    #ffffff;
+  --ci-border:     #dde1e8;
+  --ci-border2:    #c6ccd6;
+  --ci-text:       #0d2d3e;
+  --ci-text2:      #3d4f5c;
+  --ci-muted:      #7a8899;
+  
+  /* Semánticos */
+  --ci-green:      #1a7a4a;
+  --ci-green-bg:   #e5f5ec;
+  --ci-red:        #b83228;
+  --ci-red-bg:     #fceeed;
+  --ci-amber:      #a34f00;
+  --ci-amber-bg:   #fef2e0;
+}
+
+/* ── Global styles ── */
+body {
+  background-color: var(--ci-bg);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--ci-text);
+}
+
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* ── Custom components ── */
+@layer components {
+  .btn-primary {
+    @apply bg-[var(--primary)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-90)] transition-colors font-medium;
+  }
+  
+  .btn-secondary {
+    @apply bg-[var(--accent)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-70)] transition-colors font-medium;
+  }
+  
+  .card {
+    @apply bg-[var(--ci-surface)] rounded-xl shadow-sm border border-[var(--ci-border)] p-6;
+  }
+  
+  .input-field {
+    @apply w-full px-3 py-2 border border-[var(--ci-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent;
+  }
+  
+  /* Badges */
+  .badge-primary {
+    @apply bg-[var(--accent-bg)] text-[var(--primary)] px-3 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .badge-green {
+    @apply bg-[var(--ci-green-bg)] text-[var(--ci-green)] px-3 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .badge-red {
+    @apply bg-[var(--ci-red-bg)] text-[var(--ci-red)] px-3 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .badge-amber {
+    @apply bg-[var(--ci-amber-bg)] text-[var(--ci-amber)] px-3 py-1 rounded-full text-xs font-medium;
+  }
+}
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gray);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}

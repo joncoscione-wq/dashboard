@@ -1,0 +1,9 @@
+[
+  { "id": 301, "numero": "1123117902", "rol": "Asesoramiento 3", "usuario": "IH",          "equipo": "Samsung Galaxy A04" },
+  { "id": 302, "numero": "1123468236", "rol": "- (ex RE, Ni)",   "usuario": "-",           "equipo": "-" },
+  { "id": 303, "numero": "1128535202", "rol": "Asesoramiento 2", "usuario": "BS",          "equipo": "Samsung Galaxy A01 Core" },
+  { "id": 304, "numero": "1138592005", "rol": "Compliance",      "usuario": "AR x Henris", "equipo": "Samsung Galaxy A01 Core" },
+  { "id": 305, "numero": "1140358337", "rol": "Asesoramiento 1", "usuario": "MB",          "equipo": "Motorola E22" },
+  { "id": 306, "numero": "1155736143", "rol": "Asesoramiento 5", "usuario": "FT",          "equipo": "Samsung Galaxy A06" },
+  { "id": 307, "numero": "1158080025", "rol": "-",               "usuario": "-",           "equipo": "-" }
+]

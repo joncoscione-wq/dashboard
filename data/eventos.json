@@ -1,0 +1,13 @@
+[
+  { "id": 101, "tipo": "Cumpleaños", "nombre": "Cumpleaños de Mariano Bandieri",   "fecha": "2026-03-13", "emp_id": 4,  "notas": "" },
+  { "id": 102, "tipo": "Cumpleaños", "nombre": "Cumpleaños de Fernanda Guardiola", "fecha": "2026-08-14", "emp_id": 5,  "notas": "" },
+  { "id": 103, "tipo": "Cumpleaños", "nombre": "Cumpleaños de Eliana Tubio",       "fecha": "2026-02-17", "emp_id": 6,  "notas": "" },
+  { "id": 104, "tipo": "Cumpleaños", "nombre": "Cumpleaños de Zahira Arriola",     "fecha": "2026-01-30", "emp_id": 7,  "notas": "" },
+  { "id": 105, "tipo": "Cumpleaños", "nombre": "Cumpleaños de Diego Coatz",        "fecha": "2026-04-18", "emp_id": 8,  "notas": "" },
+  { "id": 106, "tipo": "Cumpleaños", "nombre": "Cumpleaños de Gabriel Vienni",     "fecha": "2026-12-23", "emp_id": 9,  "notas": "" },
+  { "id": 107, "tipo": "Cumpleaños", "nombre": "Cumpleaños de Jonathan Coscione",  "fecha": "2026-04-23", "emp_id": 10, "notas": "" },
+  { "id": 108, "tipo": "Cumpleaños", "nombre": "Cumpleaños de Tomas Rozemberg",    "fecha": "2026-02-24", "emp_id": 11, "notas": "" },
+  { "id": 109, "tipo": "Cumpleaños", "nombre": "Cumpleaños de Ignacio Hernandez",  "fecha": "2026-10-26", "emp_id": 12, "notas": "" },
+  { "id": 110, "tipo": "Cumpleaños", "nombre": "Cumpleaños de Agustin Fenoglio",   "fecha": "2026-11-27", "emp_id": 13, "notas": "" },
+  { "id": 111, "tipo": "Cumpleaños", "nombre": "Cumpleaños de Veronica Gemio",     "fecha": "2026-09-28", "emp_id": 14, "notas": "" }
+]

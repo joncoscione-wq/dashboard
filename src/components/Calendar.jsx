@@ -1,51 +1,35 @@
 import React, { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Users, MapPin, Clock } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Users } from 'lucide-react'
 import { api } from '../config/api'
+
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+const DAYS_HEADER = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
+const WEEK_DAYS = ['lun','mar','mie','jue','vie']
+
+const PRESENCE_STATES = {
+  presencial: { color: 'bg-[var(--ci-green)]',   label: 'Presencial' },
+  remoto:     { color: 'bg-[var(--accent)]',      label: 'Remoto' },
+  ausente:    { color: 'bg-[var(--ci-red)]',      label: 'Ausente' },
+  libre:      { color: 'bg-gray-300',             label: 'Libre' },
+}
 
 const Calendar = ({ employees }) => {
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [selectedDate, setSelectedDate] = useState(new Date())
   const [events, setEvents] = useState([])
   const [vacations, setVacations] = useState([])
   const [presence, setPresence] = useState({})
-  const [showEventModal, setShowEventModal] = useState(false)
   const [showPresenceModal, setShowPresenceModal] = useState(false)
   const [selectedEmployee, setSelectedEmployee] = useState(null)
-  const [viewMode, setViewMode] = useState('month') // month, week, day
+  const [presenceForm, setPresenceForm] = useState({ dia: '', estado: 'presencial' })
 
-  const [eventForm, setEventForm] = useState({
-    titulo: '',
-    descripcion: '',
-    fecha: '',
-    tipo: 'general'
-  })
-
-  const [presenceForm, setPresenceForm] = useState({
-    emp_id: '',
-    dia: '',
-    estado: 'presencial'
-  })
-
-  const daysOfWeek = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-  const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-
-  const presenceStates = {
-    presencial: { color: 'bg-green-500', label: 'Presencial' },
-    remoto: { color: 'bg-blue-500', label: 'Remoto' },
-    ausente: { color: 'bg-red-500', label: 'Ausente' },
-    libre: { color: 'bg-gray-500', label: 'Libre' }
-  }
-
-  useEffect(() => {
-    fetchData()
-  }, [])
+  useEffect(() => { fetchData() }, [])
 
   const fetchData = async () => {
     try {
       const [eventsData, vacationsData, presenceData] = await Promise.all([
         api.events.getAll(),
         api.vacations.getAll(),
-        api.presence.getAll()
+        api.presence.getAll(),
       ])
       setEvents(eventsData)
       setVacations(vacationsData)
@@ -55,261 +39,221 @@ const Calendar = ({ employees }) => {
     }
   }
 
-  const getDaysInMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+  const fmt = (date) => date.toISOString().split('T')[0]
+
+  const getEventsForDate = (day) => {
+    const dateStr = fmt(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))
+    return events.filter(e => e.fecha === dateStr)
   }
 
-  const getFirstDayOfMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay()
+  const getVacationsForDate = (day) => {
+    const current = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+    return vacations.filter(v => {
+      return current >= new Date(v.desde) && current <= new Date(v.hasta)
+    })
   }
 
-  const formatDate = (date) => {
-    return date.toISOString().split('T')[0]
-  }
-
-  const handlePrevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))
-  }
-
-  const handleNextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))
-  }
-
-  const handleDateClick = (day) => {
-    const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
-    setSelectedDate(clickedDate)
-    setEventForm({ ...eventForm, fecha: formatDate(clickedDate) })
-    setShowEventModal(true)
-  }
-
-  const handleAddEvent = async () => {
-    try {
-      await api.events.create(eventForm)
-      setShowEventModal(false)
-      setEventForm({ titulo: '', descripcion: '', fecha: '', tipo: 'general' })
-      fetchData()
-    } catch (error) {
-      console.error('Error adding event:', error)
-    }
+  const getPresenceForDay = (employeeId, weekday) => {
+    return presence[`${employeeId}_${weekday}`]
   }
 
   const handleUpdatePresence = async () => {
     try {
-      await api.presence.update(presenceForm.emp_id, presenceForm.dia, presenceForm.estado)
+      await api.presence.update(selectedEmployee.id, presenceForm.dia, presenceForm.estado)
       setShowPresenceModal(false)
-      setPresenceForm({ emp_id: '', dia: '', estado: 'presencial' })
+      setSelectedEmployee(null)
+      setPresenceForm({ dia: '', estado: 'presencial' })
       fetchData()
     } catch (error) {
       console.error('Error updating presence:', error)
     }
   }
 
-  const getEventsForDate = (day) => {
-    const dateStr = formatDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))
-    return events.filter(event => event.fecha === dateStr)
-  }
+  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
+  const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
 
-  const getVacationsForDate = (day) => {
-    const dateStr = formatDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))
-    return vacations.filter(vacation => {
-      const start = new Date(vacacion.fecha_inicio)
-      const end = new Date(vacacion.fecha_fin)
-      const current = new Date(dateStr)
-      return current >= start && current <= end
-    })
-  }
-
-  const getPresenceForDate = (day, employeeId) => {
-    const dayOfWeek = ['dom', 'lun', 'mar', 'mie', 'jue', 'vie', 'sab'][new Date(currentDate.getFullYear(), currentDate.getMonth(), day).getDay()]
-    const key = `${employeeId}_${dayOfWeek}`
-    return presence[key]
-  }
-
-  const renderCalendarDays = () => {
-    const daysInMonth = getDaysInMonth(currentDate)
-    const firstDay = getFirstDayOfMonth(currentDate)
-    const days = []
-
-    // Empty cells for days before month starts
+  const renderDays = () => {
+    const cells = []
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-24 border border-[var(--ci-border)]"></div>)
+      cells.push(<div key={`e-${i}`} className="h-14 sm:h-20 border border-[var(--ci-border)] bg-[var(--ci-bg)]" />)
     }
-
-    // Days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const dayEvents = getEventsForDate(day)
-      const dayVacations = getVacationsForDate(day)
-      const isToday = new Date().toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString()
-
-      days.push(
+      const dayVacs = getVacationsForDate(day)
+      const isToday = fmt(new Date()) === fmt(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))
+      cells.push(
         <div
           key={day}
-          onClick={() => handleDateClick(day)}
-          className={`h-24 border border-[var(--ci-border)] p-2 cursor-pointer hover:bg-[var(--accent-bg)] transition-colors ${
-            isToday ? 'bg-[var(--accent-bg)]' : 'bg-white'
-          }`}
+          className={`h-14 sm:h-20 border border-[var(--ci-border)] p-1 sm:p-2 ${isToday ? 'bg-[var(--accent-bg)]' : 'bg-white'}`}
         >
-          <div className="flex justify-between items-start">
-            <span className={`text-sm font-medium ${isToday ? 'text-[var(--accent)]' : 'text-[var(--ci-text)]'}`}>
-              {day}
-            </span>
-            {dayEvents.length > 0 && (
-              <div className="w-2 h-2 bg-[var(--accent)] rounded-full"></div>
-            )}
-          </div>
-          
-          <div className="mt-1 space-y-1">
-            {dayEvents.slice(0, 2).map((event, idx) => (
-              <div key={idx} className="text-xs bg-[var(--primary)] text-white px-1 py-0.5 rounded truncate">
-                {event.titulo}
+          <span className={`text-xs sm:text-sm font-medium ${isToday ? 'text-[var(--accent)]' : 'text-[var(--ci-text)]'}`}>
+            {day}
+          </span>
+          <div className="hidden sm:block mt-1 space-y-0.5">
+            {dayEvents.slice(0, 2).map((ev, i) => (
+              <div key={i} className="text-xs bg-[var(--primary)] text-white px-1 py-0.5 rounded truncate">
+                {ev.nombre}
               </div>
             ))}
-            {dayVacations.length > 0 && (
+            {dayVacs.length > 0 && (
               <div className="text-xs bg-[var(--ci-amber)] text-white px-1 py-0.5 rounded">
-                {dayVacations.length} vacaciones
+                {dayVacs.length} vac.
               </div>
             )}
+          </div>
+          {/* Mobile: solo dots */}
+          <div className="sm:hidden flex gap-0.5 mt-1 flex-wrap">
+            {dayEvents.length > 0 && <div className="w-1.5 h-1.5 rounded-full bg-[var(--primary)]" />}
+            {dayVacs.length > 0 && <div className="w-1.5 h-1.5 rounded-full bg-[var(--ci-amber)]" />}
           </div>
         </div>
       )
     }
-
-    return days
+    return cells
   }
 
-  const EventModal = () => {
-    if (!showEventModal) return null
+  const activeVacations = vacations.filter(v => {
+    const now = new Date()
+    return now >= new Date(v.desde) && now <= new Date(v.hasta)
+  })
 
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl max-w-md w-full">
-          <div className="p-6">
-            <h3 className="text-lg font-bold text-[var(--ci-text)] mb-4">Nuevo Evento</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-[var(--ci-text)] mb-1">
-                  Título
-                </label>
-                <input
-                  type="text"
-                  value={eventForm.titulo}
-                  onChange={(e) => setEventForm({...eventForm, titulo: e.target.value})}
-                  className="input-field"
-                  required
-                />
-              </div>
+  const upcomingEvents = events
+    .filter(e => new Date(e.fecha) >= new Date())
+    .slice(0, 5)
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--ci-text)] mb-1">
-                  Descripción
-                </label>
-                <textarea
-                  value={eventForm.descripcion}
-                  onChange={(e) => setEventForm({...eventForm, descripcion: e.target.value})}
-                  className="input-field"
-                  rows={3}
-                />
-              </div>
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-[var(--ci-text)] font-poppins">Calendario RRHH</h1>
+        <p className="text-[var(--ci-muted)] mt-1">Eventos, vacaciones y presencialidad</p>
+      </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--ci-text)] mb-1">
-                  Fecha
-                </label>
-                <input
-                  type="date"
-                  value={eventForm.fecha}
-                  onChange={(e) => setEventForm({...eventForm, fecha: e.target.value})}
-                  className="input-field"
-                  required
-                />
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Calendar */}
+        <div className="lg:col-span-2 card">
+          <div className="flex justify-between items-center mb-4">
+            <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
+              className="p-2 hover:bg-[var(--ci-bg)] rounded-lg">
+              <ChevronLeft size={20} />
+            </button>
+            <h2 className="text-lg font-semibold text-[var(--ci-text)]">
+              {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
+            </h2>
+            <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}
+              className="p-2 hover:bg-[var(--ci-bg)] rounded-lg">
+              <ChevronRight size={20} />
+            </button>
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--ci-text)] mb-1">
-                  Tipo
-                </label>
-                <select
-                  value={eventForm.tipo}
-                  onChange={(e) => setEventForm({...eventForm, tipo: e.target.value})}
-                  className="input-field"
-                >
-                  <option value="general">General</option>
-                  <option value="feriado">Feriado</option>
-                  <option value="capacitacion">Capacitación</option>
-                  <option value="reunion">Reunión</option>
-                </select>
-              </div>
+          <div className="grid grid-cols-7 mb-1">
+            {DAYS_HEADER.map(d => (
+              <div key={d} className="text-center text-xs font-medium text-[var(--ci-muted)] py-1">{d}</div>
+            ))}
+          </div>
+          <div className="grid grid-cols-7">{renderDays()}</div>
+
+          {/* Leyenda */}
+          <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-[var(--ci-border)]">
+            <span className="flex items-center gap-1 text-xs text-[var(--ci-muted)]">
+              <span className="w-2 h-2 rounded-full bg-[var(--primary)] inline-block" /> Evento
+            </span>
+            <span className="flex items-center gap-1 text-xs text-[var(--ci-muted)]">
+              <span className="w-2 h-2 rounded-full bg-[var(--ci-amber)] inline-block" /> Vacaciones
+            </span>
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-4">
+          <div className="card">
+            <h3 className="text-base font-semibold text-[var(--ci-text)] mb-3">Próximos eventos</h3>
+            <div className="space-y-2">
+              {upcomingEvents.map(ev => (
+                <div key={ev.id} className="p-2 bg-[var(--ci-bg)] rounded-lg">
+                  <p className="font-medium text-[var(--ci-text)] text-sm">{ev.nombre}</p>
+                  <p className="text-xs text-[var(--ci-muted)] mt-0.5">{ev.fecha}</p>
+                </div>
+              ))}
+              {upcomingEvents.length === 0 && <p className="text-[var(--ci-muted)] text-sm text-center py-3">Sin eventos próximos</p>}
             </div>
+          </div>
 
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => setShowEventModal(false)}
-                className="px-4 py-2 border border-[var(--ci-border)] rounded-lg hover:bg-[var(--ci-bg)]"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleAddEvent}
-                className="btn-primary"
-              >
-                Agregar Evento
-              </button>
+          <div className="card">
+            <h3 className="text-base font-semibold text-[var(--ci-text)] mb-3">Vacaciones activas</h3>
+            <div className="space-y-2">
+              {activeVacations.map(v => {
+                const emp = employees.find(e => e.id === v.emp_id)
+                return (
+                  <div key={v.id} className="p-2 bg-[var(--ci-amber-bg)] rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Users size={14} className="text-[var(--ci-amber)] shrink-0" />
+                      <span className="font-medium text-[var(--ci-text)] text-sm truncate">
+                        {emp ? emp.nombre : `Emp #${v.emp_id}`}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[var(--ci-muted)] mt-0.5">{v.desde} → {v.hasta}</p>
+                  </div>
+                )
+              })}
+              {activeVacations.length === 0 && <p className="text-[var(--ci-muted)] text-sm text-center py-3">Sin vacaciones activas</p>}
             </div>
           </div>
         </div>
       </div>
-    )
-  }
 
-  const PresenceGrid = () => {
-    const daysOfWeek = ['lun', 'mar', 'mie', 'jue', 'vie']
-    
-    return (
+      {/* Presence Grid */}
       <div className="card">
-        <h3 className="text-lg font-semibold text-[var(--ci-text)] mb-4">Presencialidad Semanal</h3>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
+          <h3 className="text-base font-semibold text-[var(--ci-text)]">Presencialidad semanal</h3>
+          <div className="flex flex-wrap gap-3">
+            {Object.entries(PRESENCE_STATES).map(([k, v]) => (
+              <span key={k} className="flex items-center gap-1 text-xs text-[var(--ci-muted)]">
+                <span className={`w-2 h-2 rounded-full ${v.color} inline-block`} />{v.label}
+              </span>
+            ))}
+          </div>
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[420px]">
             <thead>
               <tr className="border-b border-[var(--ci-border)]">
-                <th className="text-left p-2">Empleado</th>
-                {daysOfWeek.map(day => (
-                  <th key={day} className="text-center p-2 capitalize">{day}</th>
+                <th className="text-left py-2 pr-4 font-medium text-[var(--ci-muted)] min-w-[140px]">Empleado</th>
+                {WEEK_DAYS.map(d => (
+                  <th key={d} className="text-center py-2 px-2 font-medium text-[var(--ci-muted)] capitalize w-12">{d}</th>
                 ))}
-                <th className="text-center p-2">Acciones</th>
+                <th className="py-2 pl-4 w-16"></th>
               </tr>
             </thead>
             <tbody>
-              {employees.slice(0, 10).map(employee => (
-                <tr key={employee.id} className="border-b border-[var(--ci-border)]">
-                  <td className="p-2">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 bg-[var(--accent-bg)] rounded-full flex items-center justify-center">
+              {employees.filter(e => e.estado === 'Activo').map(emp => (
+                <tr key={emp.id} className="border-b border-[var(--ci-border)] hover:bg-[var(--ci-bg)]">
+                  <td className="py-2 pr-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-[var(--accent-bg)] rounded-full flex items-center justify-center shrink-0">
                         <span className="text-xs font-medium text-[var(--accent)]">
-                          {employee.nombre.split(',')[0].charAt(0)}
+                          {emp.nombre.split(',')[0].charAt(0)}
                         </span>
                       </div>
-                      <span className="truncate max-w-[150px]">{employee.nombre}</span>
+                      <span className="truncate max-w-[120px] text-[var(--ci-text)]">{emp.nombre}</span>
                     </div>
                   </td>
-                  {daysOfWeek.map(day => {
-                    const state = getPresenceForDate(1, employee.id) // Using day 1 as reference
-                    const stateInfo = state ? presenceStates[state] : null
+                  {WEEK_DAYS.map(day => {
+                    const state = getPresenceForDay(emp.id, day)
+                    const info = state ? PRESENCE_STATES[state] : null
                     return (
-                      <td key={day} className="text-center p-2">
-                        {stateInfo && (
-                          <div className={`w-3 h-3 ${stateInfo.color} rounded-full mx-auto`} title={stateInfo.label}></div>
-                        )}
+                      <td key={day} className="text-center py-2 px-2">
+                        {info
+                          ? <div className={`w-3 h-3 ${info.color} rounded-full mx-auto`} title={info.label} />
+                          : <div className="w-3 h-3 rounded-full mx-auto bg-gray-100 border border-gray-200" />
+                        }
                       </td>
                     )
                   })}
-                  <td className="text-center p-2">
+                  <td className="py-2 pl-4">
                     <button
-                      onClick={() => {
-                        setSelectedEmployee(employee)
-                        setShowPresenceModal(true)
-                      }}
-                      className="text-[var(--accent)] hover:text-[var(--primary)] text-xs"
+                      onClick={() => { setSelectedEmployee(emp); setShowPresenceModal(true) }}
+                      className="text-xs text-[var(--accent)] hover:underline"
                     >
                       Editar
                     </button>
@@ -320,151 +264,21 @@ const Calendar = ({ employees }) => {
           </table>
         </div>
       </div>
-    )
-  }
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-[var(--ci-text)] font-poppins">
-            Calendario RRHH
-          </h1>
-          <p className="text-[var(--ci-muted)] mt-2">
-            Gestiona eventos, vacaciones y presencialidad
-          </p>
-        </div>
-        <div className="flex space-x-3">
-          <button
-            onClick={() => setShowEventModal(true)}
-            className="btn-secondary flex items-center space-x-2"
-          >
-            <CalendarIcon size={20} />
-            <span>Nuevo Evento</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Calendar */}
-        <div className="lg:col-span-2">
-          <div className="card">
-            {/* Calendar Header */}
-            <div className="flex justify-between items-center mb-4">
-              <button
-                onClick={handlePrevMonth}
-                className="p-2 hover:bg-[var(--ci-bg)] rounded-lg"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              
-              <h2 className="text-xl font-semibold text-[var(--ci-text)]">
-                {months[currentDate.getMonth()]} {currentDate.getFullYear()}
-              </h2>
-              
-              <button
-                onClick={handleNextMonth}
-                className="p-2 hover:bg-[var(--ci-bg)] rounded-lg"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
-
-            {/* Days of week */}
-            <div className="grid grid-cols-7 gap-0 mb-2">
-              {daysOfWeek.map(day => (
-                <div key={day} className="text-center text-sm font-medium text-[var(--ci-muted)] p-2">
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            {/* Calendar days */}
-            <div className="grid grid-cols-7 gap-0">
-              {renderCalendarDays()}
-            </div>
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Upcoming Events */}
-          <div className="card">
-            <h3 className="text-lg font-semibold text-[var(--ci-text)] mb-4">Próximos Eventos</h3>
-            <div className="space-y-3">
-              {events.slice(0, 5).map(event => (
-                <div key={event.id} className="p-3 bg-[var(--ci-bg)] rounded-lg">
-                  <p className="font-medium text-[var(--ci-text)]">{event.titulo}</p>
-                  <p className="text-sm text-[var(--ci-muted)] mt-1">{event.descripcion}</p>
-                  <div className="flex items-center text-xs text-[var(--ci-muted)] mt-2">
-                    <CalendarIcon size={12} className="mr-1" />
-                    {event.fecha}
-                  </div>
-                </div>
-              ))}
-              {events.length === 0 && (
-                <p className="text-[var(--ci-muted)] text-center py-4">No hay eventos próximos</p>
-              )}
-            </div>
-          </div>
-
-          {/* Current Vacations */}
-          <div className="card">
-            <h3 className="text-lg font-semibold text-[var(--ci-text)] mb-4">Vacaciones Activas</h3>
-            <div className="space-y-3">
-              {vacations.filter(v => {
-                const now = new Date()
-                const start = new Date(v.fecha_inicio)
-                const end = new Date(v.fecha_fin)
-                return now >= start && now <= end
-              }).map(vacation => (
-                <div key={vacation.id} className="p-3 bg-[var(--ci-amber-bg)] rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <Users size={16} className="text-[var(--ci-amber)]" />
-                    <span className="font-medium text-[var(--ci-text)]">{vacation.empleado}</span>
-                  </div>
-                  <p className="text-sm text-[var(--ci-muted)] mt-1">
-                    {vacation.fecha_inicio} - {vacation.fecha_fin}
-                  </p>
-                </div>
-              ))}
-              {vacations.filter(v => {
-                const now = new Date()
-                const start = new Date(v.fecha_inicio)
-                const end = new Date(v.fecha_fin)
-                return now >= start && now <= end
-              }).length === 0 && (
-                <p className="text-[var(--ci-muted)] text-center py-4">No hay vacaciones activas</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Presence Grid */}
-      <PresenceGrid />
-
-      {/* Event Modal */}
-      <EventModal />
 
       {/* Presence Modal */}
       {showPresenceModal && selectedEmployee && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-sm">
             <div className="p-6">
               <h3 className="text-lg font-bold text-[var(--ci-text)] mb-4">
-                Editar Presencialidad - {selectedEmployee.nombre}
+                Presencialidad — {selectedEmployee.nombre.split(',')[0]}
               </h3>
-              
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--ci-text)] mb-1">
-                    Día de la semana
-                  </label>
+                  <label className="block text-sm font-medium text-[var(--ci-text)] mb-1">Día</label>
                   <select
                     value={presenceForm.dia}
-                    onChange={(e) => setPresenceForm({...presenceForm, dia: e.target.value})}
+                    onChange={(e) => setPresenceForm({ ...presenceForm, dia: e.target.value })}
                     className="input-field"
                   >
                     <option value="">Seleccionar día</option>
@@ -475,43 +289,28 @@ const Calendar = ({ employees }) => {
                     <option value="vie">Viernes</option>
                   </select>
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-[var(--ci-text)] mb-1">
-                    Estado
-                  </label>
+                  <label className="block text-sm font-medium text-[var(--ci-text)] mb-1">Estado</label>
                   <select
                     value={presenceForm.estado}
-                    onChange={(e) => setPresenceForm({...presenceForm, estado: e.target.value})}
+                    onChange={(e) => setPresenceForm({ ...presenceForm, estado: e.target.value })}
                     className="input-field"
                   >
-                    <option value="presencial">Presencial</option>
-                    <option value="remoto">Remoto</option>
-                    <option value="ausente">Ausente</option>
-                    <option value="libre">Libre</option>
+                    {Object.entries(PRESENCE_STATES).map(([k, v]) => (
+                      <option key={k} value={k}>{v.label}</option>
+                    ))}
                   </select>
                 </div>
               </div>
-
               <div className="flex justify-end space-x-3 mt-6">
                 <button
-                  onClick={() => {
-                    setShowPresenceModal(false)
-                    setSelectedEmployee(null)
-                    setPresenceForm({ emp_id: '', dia: '', estado: 'presencial' })
-                  }}
+                  onClick={() => { setShowPresenceModal(false); setSelectedEmployee(null) }}
                   className="px-4 py-2 border border-[var(--ci-border)] rounded-lg hover:bg-[var(--ci-bg)]"
                 >
                   Cancelar
                 </button>
-                <button
-                  onClick={() => {
-                    handleUpdatePresence()
-                    setPresenceForm({ ...presenceForm, emp_id: selectedEmployee.id })
-                  }}
-                  className="btn-primary"
-                >
-                  Actualizar
+                <button onClick={handleUpdatePresence} className="btn-primary" disabled={!presenceForm.dia}>
+                  Guardar
                 </button>
               </div>
             </div>

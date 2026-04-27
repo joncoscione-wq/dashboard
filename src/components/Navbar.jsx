@@ -76,7 +76,7 @@ const Navbar = ({ employees }) => {
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-lg text-[var(--ci-muted)] hover:bg-[var(--taupe-bg)]"
+              className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>

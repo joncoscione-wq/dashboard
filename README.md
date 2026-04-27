@@ -1,468 +1,203 @@
 # CI RRHH Dashboard — Contexto Investments
 
-Sistema interno de gestión de Recursos Humanos para Contexto Investments.
+Sistema interno de gestión de Recursos Humanos. Versión 1.0 en producción.
 
 ---
 
-## Stack actual (v1)
+## Stack actual
 
 | Capa | Tecnología |
 |---|---|
 | Frontend | React 19 + Vite + React Router DOM |
 | Estilos | Tailwind CSS + CSS Variables (design tokens) |
-| Backend | Node.js + Express |
-| Base de datos | Archivos JSON en `/data` (file-based) |
-| Fotos | Multer → `/public/uploads/photos/` |
+| Base de datos | Supabase (PostgreSQL) |
+| Cliente DB | `@supabase/supabase-js` (llamadas directas desde el frontend) |
+| Fotos | Supabase Storage — bucket `employee-photos` (pendiente de crear) |
 | Íconos | Lucide React |
+| Deploy | Vercel (producción) |
+| CI/CD | GitHub → Vercel (push a `master` despliega automáticamente) |
 
-### Comandos para correr el proyecto
+### Comandos
 
 ```bash
-# Instalar dependencias
-npm install
-
-# Backend + Frontend en paralelo (recomendado)
-npm run dev:full
-
-# Por separado:
-npm run dev      # Express backend  →  http://localhost:3001
-npm run vite     # React frontend   →  http://localhost:5173
-
-# Compilar CSS Tailwind (watcher)
-npm run css
+npm install          # Instalar dependencias
+npm run dev          # Dev server Vite → http://localhost:5173
+npm run build        # Build de producción → dist/
+npm run preview      # Preview del build local
+npm run server       # Levantar Express legacy (solo referencia, no se usa en prod)
 ```
 
-> El frontend corre en **:5173** con proxy a la API en **:3001**. Configurado en `vite.config.js`.
+### Variables de entorno
+
+```env
+# .env.local (local) — mismas variables en Vercel dashboard
+VITE_SUPABASE_URL=https://tkfutdokpfpahhxfkgcp.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon key>
+```
 
 ---
 
-## Arquitectura actual
+## Arquitectura
 
 ```
 dashboard1.0/
-├── server.js                   ← API REST Express (puerto 3001)
-├── vite.config.js              ← Vite config (puerto 5173, proxy → 3001)
-├── data/                       ← Base de datos JSON (8 archivos)
-│   ├── empleados.json
-│   ├── ausencias.json
-│   ├── vacaciones.json
-│   ├── presencialidad.json
-│   ├── estudio.json
-│   ├── eventos.json
-│   ├── flota.json
-│   ├── notas.json
-│   └── ui_structure.json       ← Spec completo de diseño (referencia)
-├── fotos/                      ← Fotos de empleados (iniciales del nombre)
-│   └── *.jpg
-├── public/
-│   └── uploads/photos/         ← Fotos subidas via Multer
 ├── src/
 │   ├── main.jsx
 │   ├── App.jsx                 ← Router principal + carga global de empleados
 │   ├── index.css               ← Design tokens (CSS variables) + Tailwind
-│   ├── input.css               ← Entrada de Tailwind
-│   ├── config/api.js           ← Base URL del backend
+│   ├── lib/supabase.js         ← Cliente Supabase inicializado
+│   ├── config/api.js           ← Capa de acceso a datos (Supabase)
 │   └── components/
-│       ├── Navbar.jsx          ← Topbar con navegación
-│       ├── Dashboard.jsx       ← Pantalla resumen con KPIs
-│       ├── Employees.jsx       ← CRUD de empleados
-│       ├── Calendar.jsx        ← Calendario + presencialidad
-│       ├── Fleet.jsx           ← Gestión de flota móvil (UI de vehículos*)
-│       └── Events.jsx          ← CRUD de eventos y cumpleaños
-└── vanilla-dashboard/          ← Versión legacy vanilla JS (descartable en v2)
+│       ├── Navbar.jsx
+│       ├── Dashboard.jsx
+│       ├── Employees.jsx
+│       ├── Calendar.jsx
+│       ├── Fleet.jsx
+│       └── Events.jsx
+├── data/                       ← JSONs originales (respaldo histórico, no se usan)
+├── server.js                   ← Express legacy (no se usa en producción)
+├── vercel.json                 ← SPA rewrite + outputDirectory
+├── vite.config.js
+└── SCHEMA.md                   ← Schema SQL completo de Supabase
 ```
-
-> **Nota:** El componente `Fleet.jsx` fue construido para vehículos (marca, modelo, patente) pero `data/flota.json` contiene líneas de celulares Movistar. Esto es un gap a resolver en la refactorización.
 
 ---
 
-## API REST (server.js)
+## Auditoría de migración a Supabase
 
-Todos los endpoints están en `http://localhost:3001/api/`.
+### Estado de tablas en producción
 
-### Endpoints CRUD estándar
+| Tabla | Filas | RLS | Estado |
+|---|---|---|---|
+| `empleados` | 15 | ❌ off | ✅ Con datos |
+| `flota` | 7 | ❌ off | ✅ Con datos |
+| `eventos` | 11 | ❌ off | ✅ Con datos |
+| `estudio` | 5 | ❌ off | ✅ Con datos |
+| `presencialidad` | 0 | ❌ off | ⬜ Vacía |
+| `vacaciones` | 0 | ❌ off | ⬜ Vacía |
+| `ausencias` | 0 | ❌ off | ⬜ Vacía |
+| `notas_people` | 0 | ❌ off | ⬜ Vacía |
 
-Cada recurso soporta `GET /`, `POST /`, `PUT /:id`, `DELETE /:id`.
+> RLS desactivado intencionalmente — dashboard de uso interno sin autenticación de usuarios.
 
-| Recurso | Endpoint | Archivo JSON |
+### Cobertura: Tabla → API → UI
+
+| Tabla | API (`api.js`) | Componente | Funcionalidad |
+|---|---|---|---|
+| `empleados` | ✅ getAll / create / update / delete | `Employees.jsx` | ✅ CRUD completo |
+| `flota` | ✅ getAll / create / update / delete | `Fleet.jsx` | ✅ CRUD completo |
+| `eventos` | ✅ getAll / create / update / delete | `Events.jsx` | ✅ CRUD completo |
+| `presencialidad` | ✅ getAll / update (upsert) / setAll | `Calendar.jsx` | ✅ Lectura + edición por empleado |
+| `vacaciones` | ✅ getAll / create / update / delete | `Calendar.jsx` | ⚠️ Solo lectura en calendario |
+| `ausencias` | ✅ getAll / create / update / delete | `Dashboard.jsx` | ⚠️ Solo conteo mensual en KPI |
+| `notas_people` | ✅ getAll / create / delete | — | ❌ Sin componente UI |
+| `estudio` | ❌ Sin método en api.js | — | ❌ Sin API ni UI |
+| Storage fotos | ✅ upload / delete en api.js | — | ❌ Bucket no creado, sin UI |
+
+### Pendientes para v2
+
+| # | Ítem | Descripción |
 |---|---|---|
-| Empleados | `/api/empleados` | `data/empleados.json` |
-| Vacaciones | `/api/vacaciones` | `data/vacaciones.json` |
-| Ausencias | `/api/ausencias` | `data/ausencias.json` |
-| Estudio / Licencias | `/api/estudio` | `data/estudio.json` |
-| Eventos | `/api/eventos` | `data/eventos.json` |
-| Flota Móviles | `/api/flota` | `data/flota.json` |
-
-### Endpoints especiales
-
-```
-GET    /api/notas?emp_id=:id      ← Notas filtradas por empleado
-POST   /api/notas                 ← Nueva nota (agrega fecha automáticamente)
-DELETE /api/notas/:id
-
-GET    /api/presencialidad        ← Objeto { "empId_dia": "estado" }
-PATCH  /api/presencialidad/:empId/:dia  ← Body: { estado: "presencial"|"remoto"|"ausente"|"libre" }
-PUT    /api/presencialidad        ← Reemplaza objeto completo
-
-POST   /api/photos/:empId         ← Subir foto (multipart/form-data, campo: "photo")
-DELETE /api/photos/:empId         ← Eliminar foto
-
-GET    /api/health                ← Health check
-```
-
-### Estructura de presencialidad
-
-Es un objeto flat (no array), con claves `"empId_diaSemana"`:
-
-```json
-{
-  "10_lun": "remoto",
-  "10_mar": "presencial",
-  "4_lun": "presencial"
-}
-```
-
-Días válidos: `lun`, `mar`, `mie`, `jue`, `vie`.
+| 1 | UI vacaciones | CRUD completo desde Calendario o módulo propio |
+| 2 | UI ausencias | CRUD completo — formulario con emp_id, tipo, rango de fechas |
+| 3 | UI notas_people | Timeline de notas por empleado (módulo Legajos) |
+| 4 | UI estudio | Licencias educativas con límite 10 días/año |
+| 5 | Storage fotos | Crear bucket `employee-photos` + UI de upload en Employees |
+| 6 | RLS | Habilitar Row Level Security cuando se implemente autenticación |
 
 ---
 
 ## Módulos del dashboard
 
-### 1. Dashboard (Resumen)
-- **Ruta:** `/`
-- **Componente:** `Dashboard.jsx`
-- **KPIs:** Equipo activo · Ausencias este mes · Próximo cumpleaños
+### Dashboard (`/`)
+- **KPIs:** Equipo activo · Ausencias este mes (desde Supabase) · Cumpleaños próximos 30 días
 - **Cards:** Empleados recientes · Próximos eventos
 - **Acciones rápidas:** Links a los 4 módulos principales
 
-### 2. Empleados (Legajo)
-- **Ruta:** `/empleados`
-- **Componente:** `Employees.jsx`
-- **Funcionalidad:** CRUD completo con modal (Agregar / Editar / Eliminar)
-- **Filtros:** Búsqueda por texto · Filtro por estado · Filtro por área
-- **Vista:** Grid de tarjetas con avatar (inicial del apellido), puesto, email, celular, área, fecha ingreso
+### Empleados (`/empleados`)
+- CRUD completo con modal (Agregar / Editar / Eliminar)
+- Filtros: búsqueda por texto · estado · área
+- Vista en tarjetas con avatar inicial, puesto, email, celular, ingreso
+- Estado válido: `Activo` / `Inactivo`
 
-### 3. Calendario
-- **Ruta:** `/calendario`
-- **Componente:** `Calendar.jsx`
-- **Funcionalidad:** Calendario mensual navegable · Vista de eventos por día · Grid de presencialidad semanal
-- **Modales:** Agregar evento desde celda del calendario · Editar presencialidad por empleado
+### Calendario (`/calendario`)
+- Calendario mensual navegable con eventos y vacaciones superpuestos
+- Sidebar: próximos eventos + vacaciones activas (con nombre de empleado resuelto)
+- Grid de presencialidad semanal Lu–Vi por empleado activo
+- Modal para editar presencialidad individual por día
 
-### 4. Flota Móviles
-- **Ruta:** `/flota`
-- **Componente:** `Fleet.jsx`
-- **Datos reales:** Líneas Movistar (número, rol, usuario asignado, equipo)
-- **⚠ Gap:** La UI del componente está diseñada para vehículos. En la refactorización se debe realinear con los datos reales de `flota.json`.
+### Flota Móvil (`/flota`)
+- Tabla de líneas Movistar: número, rol, usuario, equipo
+- CRUD completo (Nueva línea / Editar / Eliminar)
+- Búsqueda por número, usuario o equipo
+- Stats: total / asignadas / sin asignar
 
-### 5. Eventos y Cumpleaños
-- **Ruta:** `/eventos`
-- **Componente:** `Events.jsx`
-- **Funcionalidad:** CRUD de eventos · Filtros por tipo y mes · Lista de próximos 5 eventos en sidebar
-- **Tipos:** General · Feriado · Capacitación · Reunión · Cumpleaños · Evento Empresa
+### Eventos (`/eventos`)
+- CRUD completo
+- Campos: nombre, fecha, tipo, notas
+- Tipos: `General` · `Corporativo` · `Feriado` · `Capacitación` · `Reunión` · `Cumpleaños`
+- Filtros por texto, tipo y mes
+- Sidebar: próximos 5 eventos + conteo por tipo
 
 ---
 
 ## Sistema de diseño
 
 ### Tipografía
-- **Títulos:** Poppins (400, 500, 600, 700, 800, 900) — clase `font-poppins`
-- **Cuerpo:** DM Sans (300, 400, 500, 600, 700) — default en `body`
+- **Títulos:** Poppins — clase `font-poppins`
+- **Cuerpo:** DM Sans — default en `body`
 - **Tamaño base:** 13px
 
-### Tokens de color (CSS Variables — definidos en `src/index.css`)
+### Tokens de color (CSS Variables en `src/index.css`)
 
 ```css
-/* Paleta oficial CI */
---primary:     #0d4259   /* Azul oscuro principal */
---accent:      #186f8a   /* Azul medio, CTAs */
---primary-90:  #154e69
---primary-70:  #2a6884
---accent-bg:   #e4f2f7   /* Fondo accent claro */
+--primary:     #0d4259   /* Azul oscuro — navbar, botones primarios */
+--accent:      #186f8a   /* Azul medio — CTAs, links activos */
+--accent-bg:   #e4f2f7   /* Fondo suave accent */
 --taupe:       #a5a08e
 --taupe-bg:    #f5f2ed
---taupe-light: #ece9e3
 
-/* Sistema UI */
---ci-bg:       #f3f4f6   /* Fondo de la app */
---ci-surface:  #ffffff   /* Cards */
---ci-border:   #dde1e8
---ci-border2:  #c6ccd6
+--ci-bg:       #f3f4f6   /* Fondo global */
 --ci-text:     #0d2d3e   /* Texto principal */
---ci-text2:    #3d4f5c
 --ci-muted:    #7a8899   /* Texto secundario */
+--ci-border:   #dde1e8
 
-/* Semánticos */
---ci-green:    #1a7a4a  --ci-green-bg:  #e5f5ec
---ci-red:      #b83228  --ci-red-bg:    #fceeed
---ci-amber:    #a34f00  --ci-amber-bg:  #fef2e0
+--ci-green:    #1a7a4a  / --ci-green-bg:  #e5f5ec
+--ci-red:      #b83228  / --ci-red-bg:    #fceeed
+--ci-amber:    #a34f00  / --ci-amber-bg:  #fef2e0
 ```
 
-### Clases utilitarias (definidas en `@layer components`)
+### Clases utilitarias
 
 | Clase | Uso |
 |---|---|
 | `.card` | Contenedor blanco, radius 12px, border, shadow |
 | `.btn-primary` | Botón fondo `--primary` |
-| `.btn-secondary` | Botón fondo `--accent` |
-| `.input-field` | Input con focus ring `--accent` |
-| `.badge-green/red/amber/primary` | Badges de estado |
-| `.fade-in` | Animación fadeIn 0.3s |
+| `.btn-secondary` | Botón borde `--accent` |
+| `.input-field` | Input estándar con focus ring `--accent` |
 
 ---
 
-## Datos actuales (data/*.json)
+## Schema de base de datos
 
-### `empleados.json` — 15 registros
-
-```json
-{
-  "id": 10,
-  "nombre": "COSCIONE, Jonathan",
-  "puesto": "Office Manager",
-  "area": "Administración",
-  "ingreso": "2021-10-04",
-  "nacimiento": "1991-04-23",
-  "modalidad": "Híbrido",
-  "email": "joncoscione@gmail.com",
-  "direccion": "Valentin Vergara 1357 4to A Torre Norte (GBA Sur)",
-  "dni": "35863977",
-  "celular": "1140765354",
-  "emergencia": "1136382429 Sabrina (Hermana)",
-  "estado": "Activo"
-}
-```
-
-Áreas presentes: `Dirección` · `Finanzas` · `Administración` · `Operaciones` · `Comercial`
-
-### `flota.json` — 7 líneas Movistar
-
-```json
-{ "id": 301, "numero": "1123117902", "rol": "Asesoramiento 3", "usuario": "IH", "equipo": "Samsung Galaxy A04" }
-```
-
-### `estudio.json` — 5 registros de licencias educativas
-
-```json
-{ "id": 201, "emp_id": 12, "tipo": "Examen — Grado", "inst": "", "mat": "", "fecha": "2026-02-06", "dias": 2, "cert": "Sí" }
-```
-
-### `eventos.json` — 11 cumpleaños de empleados
-
-```json
-{ "id": 101, "tipo": "Cumpleaños", "nombre": "Cumpleaños de Mariano Bandieri", "fecha": "2026-03-13", "emp_id": 4, "notas": "" }
-```
-
-### Vacíos en v1 (pendientes de datos)
-- `ausencias.json` → `[]`
-- `vacaciones.json` → `[]`
-- `notas.json` → `[]`
-- `presencialidad.json` → `{}`
-
----
-
-## Migración destino (v2) — Next.js + Supabase + Vercel
-
-### Stack objetivo
-
-| Capa | Tecnología |
-|---|---|
-| Framework | Next.js 14 App Router |
-| Base de datos | Supabase (PostgreSQL) |
-| ORM / Cliente | Supabase JS Client (`@supabase/supabase-js`) |
-| Deploy | Vercel |
-| Estilos | Tailwind + mismo `globals.css` (design tokens idénticos) |
-
-### Esquemas SQL para Supabase
-
-```sql
--- ─── 1. empleados ────────────────────────────────────────────────────────────
-create table empleados (
-  id          serial primary key,
-  nombre      text not null,
-  puesto      text,
-  area        text,
-  ingreso     date,
-  nacimiento  date,
-  modalidad   text default 'Presencial',  -- Presencial | Híbrido | Remoto
-  email       text unique,
-  direccion   text,
-  dni         text,
-  celular     text,
-  emergencia  text,
-  estado      text default 'Activo',      -- Activo | Inactivo
-  foto_url    text,
-  created_at  timestamptz default now()
-);
-
--- ─── 2. vacaciones ───────────────────────────────────────────────────────────
-create table vacaciones (
-  id         serial primary key,
-  emp_id     int references empleados(id) on delete cascade,
-  desde      date not null,
-  hasta      date not null,
-  dias       int,
-  notas      text,
-  created_at timestamptz default now()
-);
-
--- ─── 3. ausencias ────────────────────────────────────────────────────────────
-create table ausencias (
-  id          serial primary key,
-  emp_id      int references empleados(id) on delete cascade,
-  tipo        text,  -- Enfermedad | Licencia | Particular | Accidente | etc.
-  desde       date not null,
-  hasta       date not null,
-  dias        int,
-  certificado text default 'No',  -- Sí | No
-  notas       text,
-  created_at  timestamptz default now()
-);
-
--- ─── 4. presencialidad ───────────────────────────────────────────────────────
--- Configuración permanente Lu–Vi por empleado (persiste hasta cambio manual)
-create table presencialidad (
-  id          serial primary key,
-  emp_id      int references empleados(id) on delete cascade,
-  dia_semana  text not null,  -- lun | mar | mie | jue | vie
-  estado      text default 'libre',  -- presencial | remoto | ausente | libre
-  updated_at  timestamptz default now(),
-  unique (emp_id, dia_semana)
-);
-
--- ─── 5. estudio (licencias educativas) ───────────────────────────────────────
--- Máximo 10 días por empleado por año calendario
-create table estudio (
-  id         serial primary key,
-  emp_id     int references empleados(id) on delete cascade,
-  tipo       text,  -- Examen — Grado | Examen — Posgrado | Curso | etc.
-  inst       text,  -- institución
-  mat        text,  -- materia
-  fecha      date not null,
-  dias       int default 1,
-  cert       text default 'No',  -- Sí | No
-  created_at timestamptz default now()
-);
-
--- ─── 6. eventos ──────────────────────────────────────────────────────────────
-create table eventos (
-  id       serial primary key,
-  tipo     text,  -- Cumpleaños | Corporativo | Feriado | Capacitación | Reunión | General
-  nombre   text not null,
-  fecha    date not null,
-  emp_id   int references empleados(id) on delete set null,
-  notas    text
-);
-
--- ─── 7. flota (líneas móviles Movistar) ──────────────────────────────────────
-create table flota (
-  id      serial primary key,
-  numero  text unique not null,
-  rol     text,    -- Asesoramiento 1-5 | Compliance | etc.
-  usuario text,    -- Iniciales del empleado o nombre
-  equipo  text     -- Modelo del dispositivo
-);
-
--- ─── 8. notas_people ─────────────────────────────────────────────────────────
--- Timeline de notas libres por empleado (módulo People · Legajos)
-create table notas_people (
-  id         serial primary key,
-  emp_id     int references empleados(id) on delete cascade,
-  categoria  text default 'General',  -- General | Feedback | Advertencia | Reconocimiento | Administrativo | Otro
-  texto      text not null,
-  created_at timestamptz default now()
-);
-```
-
-### Estructura de carpetas Next.js
+Ver [`SCHEMA.md`](./SCHEMA.md) para el SQL completo con tablas, índices, seed data y diagrama de relaciones.
 
 ```
-ci-rrhh-next/
-├── app/
-│   ├── layout.tsx           ← Shell global: Navbar + estilos globales
-│   ├── page.tsx             ← Redirect → /dashboard
-│   ├── dashboard/page.tsx
-│   ├── empleados/page.tsx
-│   ├── calendario/page.tsx
-│   ├── flota/page.tsx
-│   ├── eventos/page.tsx
-│   └── api/                 ← Route Handlers (reemplazan Express)
-│       ├── empleados/route.ts
-│       ├── vacaciones/route.ts
-│       ├── ausencias/route.ts
-│       ├── presencialidad/route.ts
-│       ├── estudio/route.ts
-│       ├── eventos/route.ts
-│       ├── flota/route.ts
-│       └── notas/route.ts
-├── components/
-│   ├── Navbar.tsx
-│   ├── Dashboard.tsx
-│   ├── Employees.tsx
-│   ├── Calendar.tsx
-│   ├── Fleet.tsx
-│   └── Events.tsx
-├── lib/
-│   └── supabase.ts          ← Cliente Supabase
-├── app/globals.css          ← Mismo contenido que src/index.css
-└── supabase/
-    └── migrations/
-        └── 001_initial.sql
-```
+empleados (id) ◄──── vacaciones   (emp_id)
+               ◄──── ausencias    (emp_id)
+               ◄──── presencialidad (emp_id)
+               ◄──── estudio      (emp_id)
+               ◄──── eventos      (emp_id, nullable)
+               ◄──── notas_people (emp_id)
 
-### Cambios de código al migrar componentes
-
-Los componentes React son casi idénticos. Solo cambian imports de routing:
-
-```diff
-- import { Link, useLocation } from 'react-router-dom'
-+ import Link from 'next/link'
-+ import { usePathname } from 'next/navigation'
-
-- const location = useLocation()
-+ const pathname = usePathname()
-
-- const isActive = location.pathname === item.href
-+ const isActive = pathname === item.href
-```
-
-Y los fetches pasan de `api.employees.getAll()` a llamadas al cliente Supabase:
-
-```ts
-// lib/supabase.ts
-import { createClient } from '@supabase/supabase-js'
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-// En el componente
-const { data } = await supabase.from('empleados').select('*')
+flota  → sin FK (líneas móviles independientes)
 ```
 
 ---
 
-## Gaps conocidos a resolver en v2
+## Datos seed cargados
 
-| # | Gap | Descripción |
-|---|---|---|
-| 1 | Fleet UI vs datos reales | `Fleet.jsx` está diseñado para vehículos pero `flota.json` tiene líneas de celulares. Hay que reescribir el componente alineado a los datos reales (numero, rol, usuario, equipo). |
-| 2 | Events schema | `Events.jsx` usa `titulo/hora/ubicacion/participantes` pero `eventos.json` usa `nombre/emp_id`. Alinear schema en Supabase. |
-| 3 | Calendar vacaciones | `Calendar.jsx` referencia `v.fecha_inicio` / `v.fecha_fin` pero el schema real usa `desde` / `hasta`. |
-| 4 | Presencialidad en Calendar | La lógica de `getPresenceForDate()` en `Calendar.jsx` tiene un bug (usa `day=1` hardcoded). Reescribir para usar fecha real. |
-| 5 | Datos vacíos | `ausencias`, `vacaciones`, `notas`, `presencialidad` están vacíos. Migrar con datos reales al pasar a Supabase. |
-
----
-
-## Variables de entorno (v2 con Supabase)
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGc...
-```
-
----
-
-## Datos de referencia de empleados activos (Abril 2026)
+### empleados — 15 registros
 
 | ID | Nombre | Puesto | Área |
 |---|---|---|---|
@@ -481,3 +216,34 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGc...
 | 13 | FENOGLIO CARRIZO, Agustin | Team Leader – Financial Advisor | Finanzas |
 | 14 | GEMIO, Veronica | New Business Director | Comercial |
 | 15 | LEALE, Santiago | Financial Advisor | Finanzas |
+
+### flota — 7 líneas Movistar
+
+| ID | Número | Rol | Usuario | Equipo |
+|---|---|---|---|---|
+| 301 | 1123117902 | Asesoramiento 3 | IH | Samsung Galaxy A04 |
+| 302 | 1123468236 | - (ex RE, Ni) | - | - |
+| 303 | 1128535202 | Asesoramiento 2 | BS | Samsung Galaxy A01 Core |
+| 304 | 1138592005 | Compliance | AR x Henris | Samsung Galaxy A01 Core |
+| 305 | 1140358337 | Asesoramiento 1 | MB | Motorola E22 |
+| 306 | 1155736143 | Asesoramiento 5 | FT | Samsung Galaxy A06 |
+| 307 | 1158080025 | - | - | - |
+
+### eventos — 11 cumpleaños de empleados (IDs 101–111)
+### estudio — 5 licencias educativas (IDs 201–205)
+
+---
+
+## Historial de versiones
+
+### v1.0 — Abril 2026
+- Migración completa de JSON file-based a Supabase
+- Deploy en Vercel con CI/CD vía GitHub
+- CRUD funcional: empleados, flota, eventos
+- Calendario con presencialidad y vacaciones (lectura)
+- Responsivo tablet y mobile
+- Datos seed cargados: 15 empleados, 7 líneas, 11 eventos, 5 licencias
+
+### v0.1 — Inicial
+- Express + JSON file system
+- Dashboard estático con datos hardcodeados

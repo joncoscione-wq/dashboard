@@ -27,9 +27,10 @@ const Employees = ({ employees, onUpdate }) => {
   const areas = [...new Set(employees.map(emp => emp.area).filter(Boolean))]
 
   const filteredEmployees = employees.filter(employee => {
-    const matchesSearch = employee.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         employee.puesto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         employee.email.toLowerCase().includes(searchTerm.toLowerCase())
+    const search = searchTerm.toLowerCase()
+    const matchesSearch = (employee.nombre ?? '').toLowerCase().includes(search) ||
+                          (employee.puesto ?? '').toLowerCase().includes(search) ||
+                          (employee.email ?? '').toLowerCase().includes(search)
     const matchesStatus = filterStatus === 'todos' || employee.estado === filterStatus
     const matchesArea = filterArea === 'todos' || employee.area === filterArea
     return matchesSearch && matchesStatus && matchesArea
@@ -257,8 +258,7 @@ const Employees = ({ employees, onUpdate }) => {
                   className="input-field"
                 >
                   <option value="Activo">Activo</option>
-                  <option value="Vacaciones">Vacaciones</option>
-                  <option value="Ausente">Ausente</option>
+                  <option value="Inactivo">Inactivo</option>
                 </select>
               </div>
 
@@ -298,18 +298,18 @@ const Employees = ({ employees, onUpdate }) => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
           <h1 className="text-3xl font-bold text-[var(--ci-text)] font-poppins">
             Gestión de Empleados
           </h1>
-          <p className="text-[var(--ci-muted)] mt-2">
+          <p className="text-[var(--ci-muted)] mt-1">
             Administra la información del personal
           </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="btn-primary flex items-center space-x-2"
+          className="btn-primary flex items-center space-x-2 self-start sm:self-auto"
         >
           <Plus size={20} />
           <span>Nuevo Empleado</span>
@@ -337,8 +337,7 @@ const Employees = ({ employees, onUpdate }) => {
           >
             <option value="todos">Todos los estados</option>
             <option value="Activo">Activo</option>
-            <option value="Vacaciones">Vacaciones</option>
-            <option value="Ausente">Ausente</option>
+            <option value="Inactivo">Inactivo</option>
           </select>
 
           <select

@@ -18,14 +18,10 @@ function App() {
 
   const fetchEmployees = async () => {
     try {
-      console.log('Fetching employees from API...')
       const data = await api.employees.getAll()
-      console.log('API response:', data)
       setEmployees(data)
-      console.log('Empleados cargados:', data.length, 'empleados')
     } catch (error) {
       console.error('Error fetching employees:', error)
-      console.error('Error details:', error.message)
     } finally {
       setLoading(false)
     }

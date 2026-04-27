@@ -1,45 +1,43 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Users, Calendar, Car, CalendarDays, TrendingUp, Clock, MapPin, Phone } from 'lucide-react'
+import { Users, Calendar, Car, CalendarDays, Clock } from 'lucide-react'
 import { api } from '../config/api'
 
 const Dashboard = ({ employees }) => {
   const [events, setEvents] = useState([])
-  const [vacations, setVacations] = useState([])
-  const [fleet, setFleet] = useState([])
+  const [absences, setAbsences] = useState([])
   const [loading, setLoading] = useState(true)
-
-  console.log('Dashboard - Empleados recibidos:', employees.length, employees)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log('Cargando datos del dashboard...')
-        const [eventsData, vacationsData, fleetData] = await Promise.all([
+        const [eventsData, absencesData] = await Promise.all([
           api.events.getAll(),
-          api.vacations.getAll(),
-          api.fleet.getAll()
+          api.absences.getAll(),
         ])
-        console.log('Eventos cargados:', eventsData.length)
-        console.log('Vacaciones cargadas:', vacationsData.length)
-        console.log('Flota cargada:', fleetData.length)
         setEvents(eventsData)
-        setVacations(vacationsData)
-        setFleet(fleetData)
+        setAbsences(absencesData)
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
       } finally {
         setLoading(false)
       }
     }
-
     fetchData()
   }, [])
 
   const activeEmployees = employees.filter(emp => emp.estado === 'Activo').length
-  const onVacation = employees.filter(emp => emp.estado === 'Vacaciones').length
-  const upcomingEvents = events.slice(0, 3)
-  const recentVacations = vacations.slice(0, 3)
+  const now = new Date()
+  const absencesThisMonth = absences.filter(a => {
+    const d = new Date(a.desde)
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+  }).length
+  const upcomingBirthdays = events.filter(e => {
+    const d = new Date(e.fecha)
+    const diff = (d - now) / (1000 * 60 * 60 * 24)
+    return e.tipo === 'Cumpleaños' && diff >= 0 && diff <= 30
+  }).length
+  const upcomingEvents = events.filter(e => new Date(e.fecha) >= now).slice(0, 3)
 
   const stats = [
     {
@@ -47,27 +45,21 @@ const Dashboard = ({ employees }) => {
       value: activeEmployees,
       icon: Users,
       color: 'bg-[var(--accent)]',
-      change: '+2 este mes',
-      changeType: 'positive',
       unit: 'personas activas'
     },
     {
       title: 'Ausencias este mes',
-      value: '0',
+      value: absencesThisMonth,
       icon: Clock,
       color: 'bg-[var(--ci-red)]',
-      change: '0 días acumulados',
-      changeType: 'negative',
-      unit: 'días acumulados'
+      unit: 'registros'
     },
     {
-      title: 'Próx. cumpleaños',
-      value: upcomingEvents.length,
+      title: 'Cumpleaños próximos',
+      value: upcomingBirthdays,
       icon: CalendarDays,
       color: 'bg-[var(--ci-green)]',
-      change: 'en los próximos 30 días',
-      changeType: 'positive',
-      unit: 'días restantes'
+      unit: 'en los próximos 30 días'
     }
   ]
 

@@ -49,7 +49,7 @@ const Navbar = ({ employees }) => {
                   className={`flex items-center space-x-2 px-4 py-2 rounded-t-lg transition-colors ${
                     isActive
                       ? 'text-white border-b-2 border-[var(--accent)]'
-                      : 'text-white/42 hover:text-white/75'
+                      : 'text-white/65 hover:text-white'
                   }`}
                 >
                   <Icon size={18} />

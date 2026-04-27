@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Plus, Search, Edit, Trash2, Phone, Mail, MapPin, Calendar, Filter, X } from 'lucide-react'
 import { api } from '../config/api'
+import { useToast } from './Toast'
 
 const Employees = ({ employees, onUpdate }) => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -24,6 +25,8 @@ const Employees = ({ employees, onUpdate }) => {
     estado: 'Activo'
   })
 
+  const { showToast } = useToast()
+
   const areas = [...new Set(employees.map(emp => emp.area).filter(Boolean))]
 
   const filteredEmployees = employees.filter(employee => {
@@ -36,25 +39,19 @@ const Employees = ({ employees, onUpdate }) => {
     return matchesSearch && matchesStatus && matchesArea
   })
 
+  const emptyForm = {
+    nombre: '', puesto: '', area: '', ingreso: '', nacimiento: '',
+    modalidad: 'Presencial', email: '', direccion: '', dni: '', celular: '',
+    emergencia: '', estado: 'Activo'
+  }
+
   const handleAddEmployee = async () => {
     try {
-      await api.employees.create(formData)
+      const newEmp = await api.employees.create(formData)
       setShowAddModal(false)
-      setFormData({
-        nombre: '',
-        puesto: '',
-        area: '',
-        ingreso: '',
-        nacimiento: '',
-        modalidad: 'Presencial',
-        email: '',
-        direccion: '',
-        dni: '',
-        celular: '',
-        emergencia: '',
-        estado: 'Activo'
-      })
+      setFormData(emptyForm)
       onUpdate()
+      showToast('Empleado agregado', async () => { await api.employees.delete(newEmp.id); onUpdate() })
     } catch (error) {
       console.error('Error adding employee:', error)
     }
@@ -62,37 +59,33 @@ const Employees = ({ employees, onUpdate }) => {
 
   const handleEditEmployee = async () => {
     try {
+      const previous = { ...selectedEmployee }
       await api.employees.update(selectedEmployee.id, formData)
       setShowEditModal(false)
       setSelectedEmployee(null)
-      setFormData({
-        nombre: '',
-        puesto: '',
-        area: '',
-        ingreso: '',
-        nacimiento: '',
-        modalidad: 'Presencial',
-        email: '',
-        direccion: '',
-        dni: '',
-        celular: '',
-        emergencia: '',
-        estado: 'Activo'
-      })
+      setFormData(emptyForm)
       onUpdate()
+      showToast('Empleado actualizado', async () => {
+        const { id: prevId, ...prevData } = previous
+        await api.employees.update(prevId, prevData)
+        onUpdate()
+      })
     } catch (error) {
       console.error('Error updating employee:', error)
     }
   }
 
   const handleDeleteEmployee = async (id) => {
-    if (confirm('¿Estás seguro de que quieres eliminar este empleado?')) {
-      try {
-        await api.employees.delete(id)
-        onUpdate()
-      } catch (error) {
-        console.error('Error deleting employee:', error)
+    const previous = employees.find(e => e.id === id)
+    try {
+      await api.employees.delete(id)
+      onUpdate()
+      if (previous) {
+        const { id: _id, ...empData } = previous
+        showToast('Empleado eliminado', async () => { await api.employees.create(empData); onUpdate() })
       }
+    } catch (error) {
+      console.error('Error deleting employee:', error)
     }
   }
 

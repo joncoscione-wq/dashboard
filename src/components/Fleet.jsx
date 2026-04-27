@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Plus, Edit, Trash2, Search, X, Smartphone } from 'lucide-react'
 import { api } from '../config/api'
+import { useToast } from './Toast'
 
 const Fleet = () => {
   const [lines, setLines] = useState([])
@@ -9,6 +10,8 @@ const Fleet = () => {
   const [showEditModal, setShowEditModal] = useState(false)
   const [selectedLine, setSelectedLine] = useState(null)
   const [loading, setLoading] = useState(true)
+
+  const { showToast } = useToast()
 
   const emptyForm = { numero: '', rol: '', usuario: '', equipo: '' }
   const [formData, setFormData] = useState(emptyForm)
@@ -28,10 +31,11 @@ const Fleet = () => {
 
   const handleAdd = async () => {
     try {
-      await api.fleet.create(formData)
+      const newLine = await api.fleet.create(formData)
       setShowAddModal(false)
       setFormData(emptyForm)
       fetchLines()
+      showToast('Línea agregada', async () => { await api.fleet.delete(newLine.id); fetchLines() })
     } catch (error) {
       console.error('Error adding line:', error)
     }
@@ -39,21 +43,31 @@ const Fleet = () => {
 
   const handleEdit = async () => {
     try {
+      const previous = { ...selectedLine }
       await api.fleet.update(selectedLine.id, formData)
       setShowEditModal(false)
       setSelectedLine(null)
       setFormData(emptyForm)
       fetchLines()
+      showToast('Línea actualizada', async () => {
+        const { id: prevId, ...prevData } = previous
+        await api.fleet.update(prevId, prevData)
+        fetchLines()
+      })
     } catch (error) {
       console.error('Error updating line:', error)
     }
   }
 
   const handleDelete = async (id) => {
-    if (!confirm('¿Eliminar esta línea?')) return
+    const previous = lines.find(l => l.id === id)
     try {
       await api.fleet.delete(id)
       fetchLines()
+      if (previous) {
+        const { id: _id, ...lineData } = previous
+        showToast('Línea eliminada', async () => { await api.fleet.create(lineData); fetchLines() })
+      }
     } catch (error) {
       console.error('Error deleting line:', error)
     }

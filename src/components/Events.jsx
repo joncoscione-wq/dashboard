@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Plus, Calendar, Edit, Trash2, Search, Filter, X, Clock } from 'lucide-react'
 import { api } from '../config/api'
+import { useToast } from './Toast'
 
 const EVENT_TYPES = {
   General:       { label: 'General',       color: 'bg-blue-100 text-blue-800' },
@@ -23,6 +24,7 @@ const Events = () => {
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [loading, setLoading] = useState(true)
   const [formData, setFormData] = useState(emptyForm)
+  const { showToast } = useToast()
 
   useEffect(() => { fetchEvents() }, [])
 
@@ -39,10 +41,11 @@ const Events = () => {
 
   const handleAdd = async () => {
     try {
-      await api.events.create(formData)
+      const newEvent = await api.events.create(formData)
       setShowAddModal(false)
       setFormData(emptyForm)
       fetchEvents()
+      showToast('Evento agregado', async () => { await api.events.delete(newEvent.id); fetchEvents() })
     } catch (error) {
       console.error('Error adding event:', error)
     }
@@ -50,21 +53,31 @@ const Events = () => {
 
   const handleEdit = async () => {
     try {
+      const previous = { ...selectedEvent }
       await api.events.update(selectedEvent.id, formData)
       setShowEditModal(false)
       setSelectedEvent(null)
       setFormData(emptyForm)
       fetchEvents()
+      showToast('Evento actualizado', async () => {
+        const { id: prevId, ...prevData } = previous
+        await api.events.update(prevId, prevData)
+        fetchEvents()
+      })
     } catch (error) {
       console.error('Error updating event:', error)
     }
   }
 
   const handleDelete = async (id) => {
-    if (!confirm('¿Eliminar este evento?')) return
+    const previous = events.find(e => e.id === id)
     try {
       await api.events.delete(id)
       fetchEvents()
+      if (previous) {
+        const { id: _id, ...evData } = previous
+        showToast('Evento eliminado', async () => { await api.events.create(evData); fetchEvents() })
+      }
     } catch (error) {
       console.error('Error deleting event:', error)
     }

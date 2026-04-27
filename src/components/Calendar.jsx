@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Users } from 'lucide-react'
 import { api } from '../config/api'
+import { useToast } from './Toast'
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const DAYS_HEADER = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
@@ -21,6 +22,7 @@ const Calendar = ({ employees }) => {
   const [showPresenceModal, setShowPresenceModal] = useState(false)
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [presenceForm, setPresenceForm] = useState({ dia: '', estado: 'presencial' })
+  const { showToast } = useToast()
 
   useEffect(() => { fetchData() }, [])
 
@@ -59,11 +61,20 @@ const Calendar = ({ employees }) => {
 
   const handleUpdatePresence = async () => {
     try {
+      const prevState = getPresenceForDay(selectedEmployee.id, presenceForm.dia)
+      const capturedEmpId = selectedEmployee.id
+      const capturedDay = presenceForm.dia
       await api.presence.update(selectedEmployee.id, presenceForm.dia, presenceForm.estado)
       setShowPresenceModal(false)
       setSelectedEmployee(null)
       setPresenceForm({ dia: '', estado: 'presencial' })
       fetchData()
+      showToast(
+        'Presencia actualizada',
+        prevState != null
+          ? async () => { await api.presence.update(capturedEmpId, capturedDay, prevState); fetchData() }
+          : null
+      )
     } catch (error) {
       console.error('Error updating presence:', error)
     }

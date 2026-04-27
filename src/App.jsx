@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
+import { ToastProvider } from './components/Toast'
 import { api } from './config/api'
 
 const Dashboard  = React.lazy(() => import('./components/Dashboard'))
@@ -31,20 +32,22 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--ci-bg)]">
-      <Navbar employees={employees} />
-      <main className="container mx-auto px-4 py-6">
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/"           element={<Dashboard employees={employees} />} />
-            <Route path="/empleados"  element={<Employees employees={employees} onUpdate={fetchEmployees} />} />
-            <Route path="/calendario" element={<Calendar  employees={employees} />} />
-            <Route path="/flota"      element={<Fleet />} />
-            <Route path="/eventos"    element={<Events />} />
-          </Routes>
-        </Suspense>
-      </main>
-    </div>
+    <ToastProvider>
+      <div className="min-h-screen bg-[var(--ci-bg)]">
+        <Navbar employees={employees} />
+        <main className="container mx-auto px-4 py-6">
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/"           element={<Dashboard employees={employees} />} />
+              <Route path="/empleados"  element={<Employees employees={employees} onUpdate={fetchEmployees} />} />
+              <Route path="/calendario" element={<Calendar  employees={employees} />} />
+              <Route path="/flota"      element={<Fleet />} />
+              <Route path="/eventos"    element={<Events />} />
+            </Routes>
+          </Suspense>
+        </main>
+      </div>
+    </ToastProvider>
   )
 }
 

@@ -1,5 +1,7 @@
 node_modules
+dist
 .claude/
 .mcp.json
 .env
 .env.local
+.vercel

@@ -1,110 +1,189 @@
-export const API_BASE_URL = 'http://localhost:3001/api'
+import { supabase } from '../lib/supabase'
 
 export const api = {
-  // Generic CRUD operations
-  get: async (endpoint) => {
-    const response = await fetch(`${API_BASE_URL}/${endpoint}`)
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-    return response.json()
-  },
-
-  post: async (endpoint, data) => {
-    const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-    return response.json()
-  },
-
-  put: async (endpoint, id, data) => {
-    const response = await fetch(`${API_BASE_URL}/${endpoint}/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-    return response.json()
-  },
-
-  delete: async (endpoint, id) => {
-    const response = await fetch(`${API_BASE_URL}/${endpoint}/${id}`, {
-      method: 'DELETE'
-    })
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-    return response.json()
-  },
-
-  // Specific API methods
   employees: {
-    getAll: () => api.get('empleados'),
-    create: (data) => api.post('empleados', data),
-    update: (id, data) => api.put('empleados', id, data),
-    delete: (id) => api.delete('empleados', id)
+    getAll: async () => {
+      const { data, error } = await supabase.from('empleados').select('*').order('nombre')
+      if (error) throw error
+      return data
+    },
+    create: async (payload) => {
+      const { data, error } = await supabase.from('empleados').insert(payload).select().single()
+      if (error) throw error
+      return data
+    },
+    update: async (id, payload) => {
+      const { data, error } = await supabase.from('empleados').update(payload).eq('id', id).select().single()
+      if (error) throw error
+      return data
+    },
+    delete: async (id) => {
+      const { error } = await supabase.from('empleados').delete().eq('id', id)
+      if (error) throw error
+      return { ok: true }
+    }
   },
 
   vacations: {
-    getAll: () => api.get('vacaciones'),
-    create: (data) => api.post('vacaciones', data),
-    update: (id, data) => api.put('vacaciones', id, data),
-    delete: (id) => api.delete('vacaciones', id)
+    getAll: async () => {
+      const { data, error } = await supabase.from('vacaciones').select('*').order('desde')
+      if (error) throw error
+      return data
+    },
+    create: async (payload) => {
+      const { data, error } = await supabase.from('vacaciones').insert(payload).select().single()
+      if (error) throw error
+      return data
+    },
+    update: async (id, payload) => {
+      const { data, error } = await supabase.from('vacaciones').update(payload).eq('id', id).select().single()
+      if (error) throw error
+      return data
+    },
+    delete: async (id) => {
+      const { error } = await supabase.from('vacaciones').delete().eq('id', id)
+      if (error) throw error
+      return { ok: true }
+    }
   },
 
   absences: {
-    getAll: () => api.get('ausencias'),
-    create: (data) => api.post('ausencias', data),
-    update: (id, data) => api.put('ausencias', id, data),
-    delete: (id) => api.delete('ausencias', id)
+    getAll: async () => {
+      const { data, error } = await supabase.from('ausencias').select('*').order('desde')
+      if (error) throw error
+      return data
+    },
+    create: async (payload) => {
+      const { data, error } = await supabase.from('ausencias').insert(payload).select().single()
+      if (error) throw error
+      return data
+    },
+    update: async (id, payload) => {
+      const { data, error } = await supabase.from('ausencias').update(payload).eq('id', id).select().single()
+      if (error) throw error
+      return data
+    },
+    delete: async (id) => {
+      const { error } = await supabase.from('ausencias').delete().eq('id', id)
+      if (error) throw error
+      return { ok: true }
+    }
   },
 
   notes: {
-    getAll: (empId) => api.get(`notas${empId ? `?emp_id=${empId}` : ''}`),
-    create: (data) => api.post('notas', data),
-    delete: (id) => api.delete('notas', id)
+    // empId opcional — sin filtro devuelve todas las notas
+    getAll: async (empId) => {
+      let query = supabase.from('notas_people').select('*').order('created_at', { ascending: false })
+      if (empId) query = query.eq('emp_id', empId)
+      const { data, error } = await query
+      if (error) throw error
+      return data
+    },
+    create: async (payload) => {
+      const { data, error } = await supabase.from('notas_people').insert(payload).select().single()
+      if (error) throw error
+      return data
+    },
+    delete: async (id) => {
+      const { error } = await supabase.from('notas_people').delete().eq('id', id)
+      if (error) throw error
+      return { ok: true }
+    }
   },
 
   events: {
-    getAll: () => api.get('eventos'),
-    create: (data) => api.post('eventos', data),
-    update: (id, data) => api.put('eventos', id, data),
-    delete: (id) => api.delete('eventos', id)
+    getAll: async () => {
+      const { data, error } = await supabase.from('eventos').select('*').order('fecha')
+      if (error) throw error
+      return data
+    },
+    create: async (payload) => {
+      const { data, error } = await supabase.from('eventos').insert(payload).select().single()
+      if (error) throw error
+      return data
+    },
+    update: async (id, payload) => {
+      const { data, error } = await supabase.from('eventos').update(payload).eq('id', id).select().single()
+      if (error) throw error
+      return data
+    },
+    delete: async (id) => {
+      const { error } = await supabase.from('eventos').delete().eq('id', id)
+      if (error) throw error
+      return { ok: true }
+    }
   },
 
   fleet: {
-    getAll: () => api.get('flota'),
-    create: (data) => api.post('flota', data),
-    update: (id, data) => api.put('flota', id, data),
-    delete: (id) => api.delete('flota', id)
+    getAll: async () => {
+      const { data, error } = await supabase.from('flota').select('*').order('numero')
+      if (error) throw error
+      return data
+    },
+    create: async (payload) => {
+      const { data, error } = await supabase.from('flota').insert(payload).select().single()
+      if (error) throw error
+      return data
+    },
+    update: async (id, payload) => {
+      const { data, error } = await supabase.from('flota').update(payload).eq('id', id).select().single()
+      if (error) throw error
+      return data
+    },
+    delete: async (id) => {
+      const { error } = await supabase.from('flota').delete().eq('id', id)
+      if (error) throw error
+      return { ok: true }
+    }
   },
 
   presence: {
-    getAll: () => api.get('presencialidad'),
-    update: (empId, day, estado) => {
-      return fetch(`${API_BASE_URL}/presencialidad/${empId}/${day}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estado })
-      }).then(res => res.json())
+    // Devuelve objeto plano { "empId_dia": "estado" } para compatibilidad con los componentes
+    getAll: async () => {
+      const { data, error } = await supabase.from('presencialidad').select('emp_id, dia_semana, estado')
+      if (error) throw error
+      return Object.fromEntries(data.map(r => [`${r.emp_id}_${r.dia_semana}`, r.estado]))
     },
-    setAll: (data) => {
-      return fetch(`${API_BASE_URL}/presencialidad`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      }).then(res => res.json())
+    update: async (empId, day, estado) => {
+      const { error } = await supabase
+        .from('presencialidad')
+        .upsert({ emp_id: Number(empId), dia_semana: day, estado }, { onConflict: 'emp_id,dia_semana' })
+      if (error) throw error
+      return { key: `${empId}_${day}`, estado }
+    },
+    setAll: async (flatObj) => {
+      const rows = Object.entries(flatObj).map(([key, estado]) => {
+        const [emp_id, dia_semana] = key.split('_')
+        return { emp_id: Number(emp_id), dia_semana, estado }
+      })
+      const { error } = await supabase
+        .from('presencialidad')
+        .upsert(rows, { onConflict: 'emp_id,dia_semana' })
+      if (error) throw error
+      return flatObj
     }
   },
 
   photos: {
-    upload: (empId, file) => {
-      const formData = new FormData()
-      formData.append('photo', file)
-      return fetch(`${API_BASE_URL}/photos/${empId}`, {
-        method: 'POST',
-        body: formData
-      }).then(res => res.json())
+    upload: async (empId, file) => {
+      const ext = file.name.split('.').pop().toLowerCase()
+      const filePath = `emp_${empId}.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from('employee-photos')
+        .upload(filePath, file, { upsert: true, contentType: file.type })
+      if (uploadError) throw uploadError
+      const { data } = supabase.storage.from('employee-photos').getPublicUrl(filePath)
+      await supabase.from('empleados').update({ foto_url: data.publicUrl }).eq('id', empId)
+      return { url: data.publicUrl }
     },
-    delete: (empId) => api.delete(`photos/${empId}`)
+    delete: async (empId) => {
+      const { data: emp } = await supabase.from('empleados').select('foto_url').eq('id', empId).single()
+      if (emp?.foto_url) {
+        const filename = emp.foto_url.split('/').pop()
+        await supabase.storage.from('employee-photos').remove([filename])
+        await supabase.from('empleados').update({ foto_url: null }).eq('id', empId)
+      }
+      return { ok: true }
+    }
   }
 }

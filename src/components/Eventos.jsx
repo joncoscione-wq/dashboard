@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Plus, Edit, Trash2, Search, Calendar, Users, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Edit, Trash2, Search, Calendar, Users, X, FileText } from 'lucide-react'
 import { api } from '../config/api'
 import { useToast } from './Toast'
+
+const LICENCIA_COLORS = {
+  Vacaciones: 'bg-[var(--ci-amber)]',
+  Médica:     'bg-[var(--ci-red)]',
+  Estudio:    'bg-blue-500',
+  Personal:   'bg-purple-500',
+  Maternidad: 'bg-pink-500',
+  Paternidad: 'bg-indigo-500',
+  Duelo:      'bg-gray-500',
+  Otro:       'bg-slate-500',
+}
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const DAYS_HEADER = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
@@ -21,6 +32,7 @@ const Eventos = ({ employees }) => {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [events, setEvents] = useState([])
   const [vacations, setVacations] = useState([])
+  const [licencias, setLicencias] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('todos')
@@ -35,12 +47,14 @@ const Eventos = ({ employees }) => {
 
   const fetchData = async () => {
     try {
-      const [eventsData, vacationsData] = await Promise.all([
+      const [eventsData, vacationsData, licenciasData] = await Promise.all([
         api.events.getAll(),
         api.vacations.getAll(),
+        api.licencias.getAll(),
       ])
       setEvents(eventsData.sort((a, b) => new Date(a.fecha) - new Date(b.fecha)))
       setVacations(vacationsData)
+      setLicencias(licenciasData)
     } catch (error) {
       console.error('Error fetching events data:', error)
     } finally {
@@ -60,6 +74,13 @@ const Eventos = ({ employees }) => {
     return vacations.filter(v => current >= new Date(v.desde) && current <= new Date(v.hasta))
   }
 
+  const getLicenciasForDate = (day) => {
+    const current = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+    return licencias.filter(l =>
+      l.estado === 'Aprobada' && current >= new Date(l.desde) && current <= new Date(l.hasta)
+    )
+  }
+
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
   const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
 
@@ -69,23 +90,28 @@ const Eventos = ({ employees }) => {
       cells.push(<div key={`e-${i}`} className="h-14 sm:h-20 border border-[var(--ci-border)] bg-[var(--ci-bg)]" />)
     }
     for (let day = 1; day <= daysInMonth; day++) {
-      const dayEvents = getEventsForDate(day)
-      const dayVacs = getVacationsForDate(day)
-      const isToday = fmt(new Date()) === fmt(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))
+      const dayEvents   = getEventsForDate(day)
+      const dayVacs     = getVacationsForDate(day)
+      const dayLics     = getLicenciasForDate(day)
+      const isToday     = fmt(new Date()) === fmt(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))
       cells.push(
         <div key={day} className={`h-14 sm:h-20 border border-[var(--ci-border)] p-1 sm:p-2 ${isToday ? 'bg-[var(--accent-bg)]' : 'bg-white'}`}>
           <span className={`text-xs sm:text-sm font-medium ${isToday ? 'text-[var(--accent)]' : 'text-[var(--ci-text)]'}`}>{day}</span>
           <div className="hidden sm:block mt-1 space-y-0.5">
-            {dayEvents.slice(0, 2).map((ev, i) => (
+            {dayEvents.slice(0, 1).map((ev, i) => (
               <div key={i} className="text-xs bg-[var(--primary)] text-white px-1 py-0.5 rounded truncate">{ev.nombre}</div>
             ))}
             {dayVacs.length > 0 && (
               <div className="text-xs bg-[var(--ci-amber)] text-white px-1 py-0.5 rounded">{dayVacs.length} vac.</div>
             )}
+            {dayLics.length > 0 && (
+              <div className="text-xs bg-[var(--ci-green)] text-white px-1 py-0.5 rounded">{dayLics.length} lic.</div>
+            )}
           </div>
           <div className="sm:hidden flex gap-0.5 mt-1 flex-wrap">
             {dayEvents.length > 0 && <div className="w-1.5 h-1.5 rounded-full bg-[var(--primary)]" />}
-            {dayVacs.length > 0 && <div className="w-1.5 h-1.5 rounded-full bg-[var(--ci-amber)]" />}
+            {dayVacs.length > 0  && <div className="w-1.5 h-1.5 rounded-full bg-[var(--ci-amber)]" />}
+            {dayLics.length > 0  && <div className="w-1.5 h-1.5 rounded-full bg-[var(--ci-green)]" />}
           </div>
         </div>
       )
@@ -93,10 +119,11 @@ const Eventos = ({ employees }) => {
     return cells
   }
 
-  const activeVacations = vacations.filter(v => {
-    const now = new Date()
-    return now >= new Date(v.desde) && now <= new Date(v.hasta)
-  })
+  const now = new Date()
+  const activeVacations = vacations.filter(v => now >= new Date(v.desde) && now <= new Date(v.hasta))
+  const activeLicencias = licencias.filter(l =>
+    l.estado === 'Aprobada' && now >= new Date(l.desde) && now <= new Date(l.hasta)
+  )
   const upcomingEvents = events.filter(e => new Date(e.fecha) >= new Date()).slice(0, 5)
 
   const handleAdd = async () => {
@@ -251,6 +278,9 @@ const Eventos = ({ employees }) => {
             <span className="flex items-center gap-1 text-xs text-[var(--ci-muted)]">
               <span className="w-2 h-2 rounded-full bg-[var(--ci-amber)] inline-block" /> Vacaciones
             </span>
+            <span className="flex items-center gap-1 text-xs text-[var(--ci-muted)]">
+              <span className="w-2 h-2 rounded-full bg-[var(--ci-green)] inline-block" /> Licencia
+            </span>
           </div>
         </div>
 
@@ -268,8 +298,23 @@ const Eventos = ({ employees }) => {
             </div>
           </div>
           <div className="card">
-            <h3 className="text-base font-semibold text-[var(--ci-text)] mb-3">Vacaciones activas</h3>
+            <h3 className="text-base font-semibold text-[var(--ci-text)] mb-3">Licencias activas</h3>
             <div className="space-y-2">
+              {activeLicencias.map(l => {
+                const emp = employees.find(e => e.id === l.emp_id)
+                return (
+                  <div key={l.id} className="p-2 bg-[var(--ci-green-bg)] rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <FileText size={14} className="text-[var(--ci-green)] shrink-0" />
+                      <span className="font-medium text-[var(--ci-text)] text-sm truncate">
+                        {emp ? emp.nombre.split(',')[0] : `Emp #${l.emp_id}`}
+                      </span>
+                      <span className="text-xs text-[var(--ci-muted)] shrink-0">{l.tipo}</span>
+                    </div>
+                    <p className="text-xs text-[var(--ci-muted)] mt-0.5">{l.desde} → {l.hasta}</p>
+                  </div>
+                )
+              })}
               {activeVacations.map(v => {
                 const emp = employees.find(e => e.id === v.emp_id)
                 return (
@@ -277,14 +322,16 @@ const Eventos = ({ employees }) => {
                     <div className="flex items-center gap-2">
                       <Users size={14} className="text-[var(--ci-amber)] shrink-0" />
                       <span className="font-medium text-[var(--ci-text)] text-sm truncate">
-                        {emp ? emp.nombre : `Emp #${v.emp_id}`}
+                        {emp ? emp.nombre.split(',')[0] : `Emp #${v.emp_id}`}
                       </span>
                     </div>
                     <p className="text-xs text-[var(--ci-muted)] mt-0.5">{v.desde} → {v.hasta}</p>
                   </div>
                 )
               })}
-              {activeVacations.length === 0 && <p className="text-[var(--ci-muted)] text-sm text-center py-3">Sin vacaciones activas</p>}
+              {activeLicencias.length === 0 && activeVacations.length === 0 && (
+                <p className="text-[var(--ci-muted)] text-sm text-center py-3">Sin licencias activas</p>
+              )}
             </div>
           </div>
         </div>

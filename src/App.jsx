@@ -9,6 +9,7 @@ const Employees   = React.lazy(() => import('./components/Employees'))
 const Eventos     = React.lazy(() => import('./components/Eventos'))
 const Homeoffice  = React.lazy(() => import('./components/Homeoffice'))
 const Fleet       = React.lazy(() => import('./components/Fleet'))
+const Licencias   = React.lazy(() => import('./components/Licencias'))
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">
@@ -38,11 +39,12 @@ function App() {
         <main className="container mx-auto px-4 py-6">
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              <Route path="/"           element={<Dashboard   employees={employees} />} />
-              <Route path="/legajo"     element={<Employees   employees={employees} onUpdate={fetchEmployees} />} />
-              <Route path="/eventos"    element={<Eventos     employees={employees} />} />
-              <Route path="/homeoffice" element={<Homeoffice  employees={employees} />} />
-              <Route path="/flota"      element={<Fleet />} />
+              <Route path="/"            element={<Dashboard   employees={employees} />} />
+              <Route path="/legajo"      element={<Employees   employees={employees} onUpdate={fetchEmployees} />} />
+              <Route path="/eventos"     element={<Eventos     employees={employees} />} />
+              <Route path="/homeoffice"  element={<Homeoffice  employees={employees} />} />
+              <Route path="/flota"       element={<Fleet />} />
+              <Route path="/licencias"   element={<Licencias   employees={employees} />} />
             </Routes>
           </Suspense>
         </main>

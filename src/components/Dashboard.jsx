@@ -6,17 +6,20 @@ import { api } from '../config/api'
 const Dashboard = ({ employees }) => {
   const [events, setEvents] = useState([])
   const [absences, setAbsences] = useState([])
+  const [licencias, setLicencias] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [eventsData, absencesData] = await Promise.all([
+        const [eventsData, absencesData, licenciasData] = await Promise.all([
           api.events.getAll(),
           api.absences.getAll(),
+          api.licencias.getAll(),
         ])
         setEvents(eventsData)
         setAbsences(absencesData)
+        setLicencias(licenciasData)
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
       } finally {
@@ -32,6 +35,9 @@ const Dashboard = ({ employees }) => {
     const d = new Date(a.desde)
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
   }).length
+  const licenciasActivas = licencias.filter(l =>
+    l.estado === 'Aprobada' && now >= new Date(l.desde) && now <= new Date(l.hasta)
+  ).length
   const upcomingBirthdays = events.filter(e => {
     const d = new Date(e.fecha)
     const diff = (d - now) / (1000 * 60 * 60 * 24)
@@ -48,11 +54,11 @@ const Dashboard = ({ employees }) => {
       unit: 'personas activas'
     },
     {
-      title: 'Ausencias este mes',
-      value: absencesThisMonth,
+      title: 'Licencias activas',
+      value: licenciasActivas,
       icon: Clock,
       color: 'bg-[var(--ci-red)]',
-      unit: 'registros'
+      unit: 'hoy'
     },
     {
       title: 'Cumpleaños próximos',

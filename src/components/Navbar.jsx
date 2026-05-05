@@ -1,17 +1,18 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Users, CalendarDays, Smartphone, Laptop, Menu, X, Building } from 'lucide-react'
+import { Users, CalendarDays, Smartphone, Laptop, Menu, X, Building, FileText } from 'lucide-react'
 
 const Navbar = ({ employees }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const location = useLocation()
 
   const navigation = [
-    { name: 'Resumen',           href: '/',           icon: Building },
-    { name: 'Legajo',            href: '/legajo',      icon: Users },
-    { name: 'Eventos',           href: '/eventos',     icon: CalendarDays },
-    { name: 'Homeoffice',        href: '/homeoffice',  icon: Laptop },
-    { name: 'Flota de Celulares',href: '/flota',       icon: Smartphone },
+    { name: 'Resumen',    href: '/',           icon: Building },
+    { name: 'Legajo',     href: '/legajo',      icon: Users },
+    { name: 'Eventos',    href: '/eventos',     icon: CalendarDays },
+    { name: 'Homeoffice', href: '/homeoffice',  icon: Laptop },
+    { name: 'Licencias',  href: '/licencias',   icon: FileText },
+    { name: 'Flota',      href: '/flota',       icon: Smartphone },
   ]
 
   const activeEmployees = employees.filter(emp => emp.estado === 'Activo').length

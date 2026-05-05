@@ -285,12 +285,12 @@ create index if not exists idx_reuniones_fecha on reuniones (fecha);
 ### Fase 1 — Licencias (DB + UI)
 **Alcance:** nueva tabla `licencias`, migración de datos, componente nuevo.
 
-- [ ] Ejecutar SQL: crear tabla `licencias` + índices
-- [ ] Migrar datos de `vacaciones`, `ausencias`, `estudio` → `licencias`
-- [ ] Agregar métodos a `api.js`: `api.licencias.*`
-- [ ] Crear `Licencias.jsx`: lista filtrable + modal CRUD + visualización en Eventos
-- [ ] Mostrar licencias en el calendario de Eventos (color diferenciado por tipo)
-- [ ] KPI "Licencias activas" en Resumen
+- [x] Ejecutar SQL: crear tabla `licencias` + índices
+- [x] Migrar datos de `estudio` → `licencias` (vacaciones y ausencias tenían 0 filas)
+- [x] Agregar métodos a `api.js`: `api.licencias.*`
+- [x] Crear `Licencias.jsx`: lista filtrable + modal CRUD
+- [x] Mostrar licencias en el calendario de Eventos (punto verde + sidebar licencias activas)
+- [x] KPI "Licencias activas" en Resumen (reemplaza "Ausencias este mes")
 
 ---
 

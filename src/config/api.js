@@ -325,5 +325,87 @@ export const api = {
       }
       return { ok: true }
     }
+  },
+
+  reuniones: {
+    getAll: async (empId) => {
+      let query = supabase.from('reuniones').select('*').order('fecha', { ascending: false })
+      if (empId) query = query.eq('emp_id', empId)
+      const { data, error } = await query
+      if (error) throw error
+      return data
+    },
+    create: async (payload) => {
+      const { data, error } = await supabase.from('reuniones').insert(payload).select().single()
+      if (error) throw error
+      return data
+    },
+    update: async (id, payload) => {
+      const { data, error } = await supabase.from('reuniones').update(payload).eq('id', id).select().single()
+      if (error) throw error
+      return data
+    },
+    delete: async (id) => {
+      const { error } = await supabase.from('reuniones').delete().eq('id', id)
+      if (error) throw error
+      return { ok: true }
+    }
+  },
+
+  induccionDocs: {
+    getAll: async () => {
+      const { data, error } = await supabase.from('induccion_docs').select('*').order('titulo')
+      if (error) throw error
+      return data
+    },
+    create: async (payload) => {
+      const { data, error } = await supabase.from('induccion_docs').insert(payload).select().single()
+      if (error) throw error
+      return data
+    },
+    update: async (id, payload) => {
+      const { data, error } = await supabase.from('induccion_docs').update(payload).eq('id', id).select().single()
+      if (error) throw error
+      return data
+    },
+    delete: async (id) => {
+      const { error } = await supabase.from('induccion_docs').delete().eq('id', id)
+      if (error) throw error
+      return { ok: true }
+    }
+  },
+
+  induccionProgreso: {
+    getAll: async () => {
+      const { data, error } = await supabase
+        .from('induccion_progreso')
+        .select('*, induccion_docs(titulo, categoria, obligatorio), empleados(nombre)')
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data
+    },
+    getByEmp: async (empId) => {
+      const { data, error } = await supabase
+        .from('induccion_progreso')
+        .select('*, induccion_docs(titulo, categoria, obligatorio)')
+        .eq('emp_id', empId)
+      if (error) throw error
+      return data
+    },
+    assign: async (payload) => {
+      const { data, error } = await supabase.from('induccion_progreso').insert(payload).select().single()
+      if (error) throw error
+      return data
+    },
+    update: async (id, payload) => {
+      const { data, error } = await supabase.from('induccion_progreso').update(payload).eq('id', id).select().single()
+      if (error) throw error
+      return data
+    },
+    remove: async (id) => {
+      const { error } = await supabase.from('induccion_progreso').delete().eq('id', id)
+      if (error) throw error
+      return { ok: true }
+    }
   }
 }

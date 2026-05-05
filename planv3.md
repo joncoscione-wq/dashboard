@@ -336,9 +336,9 @@ create index if not exists idx_reuniones_fecha on reuniones (fecha);
 ### Fase 5 — People (DB + UI)
 **Alcance:** nueva tabla `reuniones`, UI para `notas_people` (ya existe en DB), vista ejecutiva.
 
-- [ ] Ejecutar SQL: tabla `reuniones` + índices
-- [ ] Agregar métodos a `api.js`: `api.reuniones.*` (ya existe `api.notes.*` para notas_people)
-- [ ] Crear `People.jsx`:
+- [x] Ejecutar SQL: tabla `reuniones` + índices
+- [x] Agregar métodos a `api.js`: `api.reuniones.*` (ya existe `api.notes.*` para notas_people)
+- [x] Crear `People.jsx`:
   - **Vista resumen ejecutivo:** tabla de todos los empleados con conteo de notas, feedbacks y reuniones pendientes
   - **Timeline por empleado:** historial de notas (`notas_people`) ordenadas por fecha con badges de categoría
   - **Reuniones:** lista + modal CRUD para registrar reuniones 1:1 o grupales
@@ -350,13 +350,13 @@ create index if not exists idx_reuniones_fecha on reuniones (fecha);
 ### Fase 6 — Inducción (DB + Storage + UI + integraciones)
 **Alcance:** bucket Supabase, tablas `induccion_docs` + `induccion_progreso`, componente.
 
-- [ ] Crear bucket `induction-docs` en Supabase Storage (público)
-- [ ] Ejecutar SQL: tablas `induccion_docs` + `induccion_progreso`
-- [ ] Ampliar `api.js`: métodos upload/delete en bucket + CRUD de docs y progreso
-- [ ] Crear `Induccion.jsx`:
-  - Biblioteca de documentos: subir PDF/doc, categorizar, marcar obligatorio
+- [x] Crear bucket `induction-docs` en Supabase Storage (público) - **MANUAL**: crear en dashboard de Supabase
+- [x] Ejecutar SQL: tablas `induccion_docs` + `induccion_progreso`
+- [x] Ampliar `api.js`: métodos CRUD de docs y progreso (upload manual en Storage)
+- [x] Crear `Induccion.jsx`:
+  - Biblioteca de documentos: categorizar, marcar obligatorio, URL del archivo
   - Panel de tracking: tabla de empleados × documentos (completado / pendiente)
-  - Asignación masiva: al agregar empleado nuevo, asignar todos los obligatorios
+  - Asignación masiva: asignar todos los obligatorios a empleado nuevo
 - [ ] Integración Google Calendar: crear evento de revisión para el empleado asignado
 - [ ] Integración Gmail: enviar mail al empleado con link al documento y fecha límite
 

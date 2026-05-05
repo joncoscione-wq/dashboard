@@ -12,6 +12,8 @@ const Fleet       = React.lazy(() => import('./components/Fleet'))
 const Licencias   = React.lazy(() => import('./components/Licencias'))
 const Sueldos     = React.lazy(() => import('./components/Sueldos'))
 const Beneficios  = React.lazy(() => import('./components/Beneficios'))
+const People      = React.lazy(() => import('./components/People'))
+const Induccion   = React.lazy(() => import('./components/Induccion'))
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">
@@ -49,6 +51,8 @@ function App() {
               <Route path="/licencias"   element={<Licencias   employees={employees} />} />
               <Route path="/sueldos"     element={<Sueldos     employees={employees} />} />
               <Route path="/beneficios"  element={<Beneficios  employees={employees} />} />
+              <Route path="/people"      element={<People      employees={employees} />} />
+              <Route path="/induccion"   element={<Induccion   employees={employees} />} />
             </Routes>
           </Suspense>
         </main>

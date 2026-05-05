@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Users, Calendar, Car, CalendarDays, Clock } from 'lucide-react'
+import { Users, CalendarDays, Smartphone, Laptop, Clock } from 'lucide-react'
 import { api } from '../config/api'
 
 const Dashboard = ({ employees }) => {
@@ -64,10 +64,10 @@ const Dashboard = ({ employees }) => {
   ]
 
   const quickActions = [
-    { title: 'Gestionar Empleados', href: '/empleados', icon: Users, color: 'bg-blue-500' },
-    { title: 'Ver Calendario', href: '/calendario', icon: Calendar, color: 'bg-green-500' },
-    { title: 'Gestionar Flota', href: '/flota', icon: Car, color: 'bg-purple-500' },
-    { title: 'Eventos', href: '/eventos', icon: CalendarDays, color: 'bg-orange-500' }
+    { title: 'Legajo',            href: '/legajo',      icon: Users,       color: 'bg-blue-500' },
+    { title: 'Eventos',           href: '/eventos',     icon: CalendarDays, color: 'bg-green-500' },
+    { title: 'Homeoffice',        href: '/homeoffice',  icon: Laptop,      color: 'bg-purple-500' },
+    { title: 'Flota de Celulares',href: '/flota',       icon: Smartphone,  color: 'bg-orange-500' },
   ]
 
   if (loading) {
@@ -88,7 +88,7 @@ const Dashboard = ({ employees }) => {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-[var(--ci-text)] font-poppins">
-          Dashboard RRHH
+          Resumen RRHH
         </h1>
         <p className="text-[var(--ci-muted)] mt-2">
           Bienvenido al sistema de gestión de recursos humanos
@@ -173,7 +173,7 @@ const Dashboard = ({ employees }) => {
             ))}
           </div>
           <Link
-            to="/empleados"
+            to="/legajo"
             className="mt-4 block text-center text-[var(--accent)] hover:text-[var(--primary)] font-medium"
           >
             Ver todos los empleados →

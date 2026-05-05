@@ -1,21 +1,20 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Users, Calendar, Car, CalendarDays, Menu, X, Building } from 'lucide-react'
+import { Users, CalendarDays, Smartphone, Laptop, Menu, X, Building } from 'lucide-react'
 
 const Navbar = ({ employees }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const location = useLocation()
 
   const navigation = [
-    { name: 'Dashboard', href: '/', icon: Building },
-    { name: 'Empleados', href: '/empleados', icon: Users },
-    { name: 'Calendario', href: '/calendario', icon: Calendar },
-    { name: 'Flota', href: '/flota', icon: Car },
-    { name: 'Eventos', href: '/eventos', icon: CalendarDays },
+    { name: 'Resumen',           href: '/',           icon: Building },
+    { name: 'Legajo',            href: '/legajo',      icon: Users },
+    { name: 'Eventos',           href: '/eventos',     icon: CalendarDays },
+    { name: 'Homeoffice',        href: '/homeoffice',  icon: Laptop },
+    { name: 'Flota de Celulares',href: '/flota',       icon: Smartphone },
   ]
 
   const activeEmployees = employees.filter(emp => emp.estado === 'Activo').length
-  const onVacation = employees.filter(emp => emp.estado === 'Vacaciones').length
 
   return (
     <nav className="bg-[var(--primary)] border-b-3 border-[var(--accent)] sticky top-0 z-50" style={{borderBottomWidth: '3px'}}>
@@ -108,16 +107,10 @@ const Navbar = ({ employees }) => {
               })}
               
               <div className="pt-4 mt-4 border-t border-[var(--ci-border)]">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <p className="text-sm text-[var(--ci-muted)]">Activos</p>
+                <div className="text-center">
+                    <p className="text-sm text-[var(--ci-muted)]">Equipo activo</p>
                     <p className="text-lg font-bold text-[var(--ci-green)]">{activeEmployees}</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-sm text-[var(--ci-muted)]">Vacaciones</p>
-                    <p className="text-lg font-bold text-[var(--ci-amber)]">{onVacation}</p>
-                  </div>
-                </div>
               </div>
             </div>
           </div>

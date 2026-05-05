@@ -4,11 +4,11 @@ import Navbar from './components/Navbar'
 import { ToastProvider } from './components/Toast'
 import { api } from './config/api'
 
-const Dashboard  = React.lazy(() => import('./components/Dashboard'))
-const Employees  = React.lazy(() => import('./components/Employees'))
-const Calendar   = React.lazy(() => import('./components/Calendar'))
-const Fleet      = React.lazy(() => import('./components/Fleet'))
-const Events     = React.lazy(() => import('./components/Events'))
+const Dashboard   = React.lazy(() => import('./components/Dashboard'))
+const Employees   = React.lazy(() => import('./components/Employees'))
+const Eventos     = React.lazy(() => import('./components/Eventos'))
+const Homeoffice  = React.lazy(() => import('./components/Homeoffice'))
+const Fleet       = React.lazy(() => import('./components/Fleet'))
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">
@@ -38,11 +38,11 @@ function App() {
         <main className="container mx-auto px-4 py-6">
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              <Route path="/"           element={<Dashboard employees={employees} />} />
-              <Route path="/empleados"  element={<Employees employees={employees} onUpdate={fetchEmployees} />} />
-              <Route path="/calendario" element={<Calendar  employees={employees} />} />
+              <Route path="/"           element={<Dashboard   employees={employees} />} />
+              <Route path="/legajo"     element={<Employees   employees={employees} onUpdate={fetchEmployees} />} />
+              <Route path="/eventos"    element={<Eventos     employees={employees} />} />
+              <Route path="/homeoffice" element={<Homeoffice  employees={employees} />} />
               <Route path="/flota"      element={<Fleet />} />
-              <Route path="/eventos"    element={<Events />} />
             </Routes>
           </Suspense>
         </main>

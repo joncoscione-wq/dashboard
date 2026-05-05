@@ -255,6 +255,55 @@ export const api = {
     }
   },
 
+  beneficios: {
+    getAll: async () => {
+      const { data, error } = await supabase.from('beneficios').select('*').order('nombre')
+      if (error) throw error
+      return data
+    },
+    create: async (payload) => {
+      const { data, error } = await supabase.from('beneficios').insert(payload).select().single()
+      if (error) throw error
+      return data
+    },
+    update: async (id, payload) => {
+      const { data, error } = await supabase.from('beneficios').update(payload).eq('id', id).select().single()
+      if (error) throw error
+      return data
+    },
+    delete: async (id) => {
+      const { error } = await supabase.from('beneficios').delete().eq('id', id)
+      if (error) throw error
+      return { ok: true }
+    }
+  },
+
+  beneficiosEmp: {
+    getAll: async () => {
+      const { data, error } = await supabase
+        .from('beneficios_empleados')
+        .select('*, beneficios(nombre, tipo)')
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data
+    },
+    assign: async (payload) => {
+      const { data, error } = await supabase.from('beneficios_empleados').insert(payload).select().single()
+      if (error) throw error
+      return data
+    },
+    update: async (id, payload) => {
+      const { data, error } = await supabase.from('beneficios_empleados').update(payload).eq('id', id).select().single()
+      if (error) throw error
+      return data
+    },
+    remove: async (id) => {
+      const { error } = await supabase.from('beneficios_empleados').delete().eq('id', id)
+      if (error) throw error
+      return { ok: true }
+    }
+  },
+
   photos: {
     upload: async (empId, file) => {
       const ext = file.name.split('.').pop().toLowerCase()

@@ -324,13 +324,12 @@ create index if not exists idx_reuniones_fecha on reuniones (fecha);
 ### Fase 4 — Beneficios (DB + UI)
 **Alcance:** tablas `beneficios` + `beneficios_empleados`, componente.
 
-- [ ] Ejecutar SQL: tablas `beneficios` + `beneficios_empleados`
-- [ ] Agregar métodos a `api.js`: `api.beneficios.*`
-- [ ] Crear `Beneficios.jsx`:
-  - Lista de beneficios activos con tipo (General / Particular / Convenio)
-  - Modal CRUD para el catálogo
-  - Panel de asignaciones individuales: ver qué beneficios tiene cada empleado
-  - Vista por empleado: desde Legajo, tab de beneficios asignados
+- [x] Ejecutar SQL: tablas `beneficios` + `beneficios_empleados`
+- [x] Agregar métodos a `api.js`: `api.beneficios.*` + `api.beneficiosEmp.*`
+- [x] Crear `Beneficios.jsx`:
+  - Catálogo con filtros tipo/estado + CRUD completo
+  - Vista "Por empleado": acordeón con asignaciones particulares + banner de generales
+  - Modal CRUD para asignaciones individuales
 
 ---
 

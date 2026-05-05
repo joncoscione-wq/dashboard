@@ -7,19 +7,26 @@ const Dashboard = ({ employees }) => {
   const [events, setEvents] = useState([])
   const [absences, setAbsences] = useState([])
   const [licencias, setLicencias] = useState([])
+  const [presence, setPresence] = useState({})
   const [loading, setLoading] = useState(true)
+
+  const TODAY_IDX = new Date().getDay()
+  const TODAY_KEY = ['dom','lun','mar','mie','jue','vie','sab'][TODAY_IDX]
+  const IS_WEEKDAY = TODAY_IDX >= 1 && TODAY_IDX <= 5
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [eventsData, absencesData, licenciasData] = await Promise.all([
+        const [eventsData, absencesData, licenciasData, presenceData] = await Promise.all([
           api.events.getAll(),
           api.absences.getAll(),
           api.licencias.getAll(),
+          api.presence.getAll(),
         ])
         setEvents(eventsData)
         setAbsences(absencesData)
         setLicencias(licenciasData)
+        setPresence(presenceData)
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
       } finally {
@@ -29,8 +36,17 @@ const Dashboard = ({ employees }) => {
     fetchData()
   }, [])
 
-  const activeEmployees = employees.filter(emp => emp.estado === 'Activo').length
+  const activeEmpList = employees.filter(emp => emp.estado === 'Activo')
+  const activeEmployees = activeEmpList.length
   const now = new Date()
+
+  const equipoHoy = IS_WEEKDAY
+    ? activeEmpList.reduce((acc, emp) => {
+        const s = presence[`${emp.id}_${TODAY_KEY}`] ?? 'libre'
+        acc[s] = (acc[s] ?? 0) + 1
+        return acc
+      }, {})
+    : null
   const absencesThisMonth = absences.filter(a => {
     const d = new Date(a.desde)
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
@@ -149,6 +165,32 @@ const Dashboard = ({ employees }) => {
           })}
         </div>
       </div>
+
+      {/* Equipo hoy */}
+      {equipoHoy && (
+        <div className="card">
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-base font-semibold text-[var(--ci-text)]">Equipo hoy</h2>
+            <Link to="/homeoffice" className="text-xs text-[var(--accent)] hover:underline">Ver detalle →</Link>
+          </div>
+          <div className="flex flex-wrap gap-4">
+            {[
+              { key: 'presencial', label: 'Presencial', color: 'bg-[var(--ci-green)]' },
+              { key: 'remoto',     label: 'Remoto',     color: 'bg-[var(--accent)]' },
+              { key: 'ausente',    label: 'Ausente',    color: 'bg-[var(--ci-red)]' },
+              { key: 'libre',      label: 'Sin registrar', color: 'bg-gray-300' },
+            ].map(({ key, label, color }) => (
+              equipoHoy[key] ? (
+                <div key={key} className="flex items-center gap-2">
+                  <div className={`w-2.5 h-2.5 rounded-full ${color}`} />
+                  <span className="text-sm text-[var(--ci-text)] font-medium">{equipoHoy[key]}</span>
+                  <span className="text-sm text-[var(--ci-muted)]">{label}</span>
+                </div>
+              ) : null
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Employees */}

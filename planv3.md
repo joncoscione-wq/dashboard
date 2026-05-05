@@ -297,13 +297,13 @@ create index if not exists idx_reuniones_fecha on reuniones (fecha);
 ### Fase 2 — Homeoffice (DB + UI)
 **Alcance:** nueva tabla `homeoffice_politica`, componente, widget en Resumen.
 
-- [ ] Ejecutar SQL: crear tabla `homeoffice_politica`
-- [ ] Agregar métodos a `api.js`: `api.homeoffice.*`
-- [ ] Crear `Homeoffice.jsx`:
-  - Grilla semanal Lu–Vi por empleado activo (tomada de presencialidad)
-  - Panel de política: modal para configurar días aprobados + modalidad
-  - Vista "Hoy en oficina / Hoy remoto" — quiénes están dónde
-- [ ] Widget en Resumen: "Quién está hoy" (presencial vs remoto vs ausente)
+- [x] Ejecutar SQL: crear tabla `homeoffice_politica`
+- [x] Agregar métodos a `api.js`: `api.homeoffice.*` (getAll/upsert/delete)
+- [x] Actualizar `Homeoffice.jsx`:
+  - Grilla semanal con columna de hoy resaltada
+  - Panel "Política de Homeoffice": tabla con modalidad + días aprobados por empleado
+  - Modal con toggle de días + max_dias_semana + vigencia + notas
+- [x] Widget en Resumen: "Equipo hoy" con conteos presencial/remoto/ausente (solo días laborables)
 
 ---
 

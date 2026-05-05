@@ -114,6 +114,28 @@ export const api = {
     }
   },
 
+  homeoffice: {
+    getAll: async () => {
+      const { data, error } = await supabase.from('homeoffice_politica').select('*')
+      if (error) throw error
+      return data
+    },
+    upsert: async (empId, payload) => {
+      const { data, error } = await supabase
+        .from('homeoffice_politica')
+        .upsert({ emp_id: Number(empId), ...payload }, { onConflict: 'emp_id' })
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    delete: async (empId) => {
+      const { error } = await supabase.from('homeoffice_politica').delete().eq('emp_id', empId)
+      if (error) throw error
+      return { ok: true }
+    }
+  },
+
   licencias: {
     getAll: async () => {
       const { data, error } = await supabase.from('licencias').select('*').order('desde', { ascending: false })

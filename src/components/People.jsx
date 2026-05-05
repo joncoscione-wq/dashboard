@@ -24,7 +24,7 @@ const TIPO_REUNION_COLORS = {
   Otro:          'bg-slate-100 text-slate-700',
 }
 
-const emptyNota = { emp_id: '', categoria: 'General', contenido: '' }
+const emptyNota = { emp_id: '', categoria: 'General', texto: '' }
 const emptyReunion = { emp_id: '', titulo: '', fecha: '', tipo: 'General', participantes: '', notas: '', acuerdos: '' }
 
 const People = ({ employees }) => {
@@ -89,8 +89,8 @@ const People = ({ employees }) => {
   // Handlers Notas
   const handleAddNota = async () => {
     try {
-      const payload = { ...notaForm, emp_id: Number(notaForm.emp_id), contenido: notaForm.contenido.trim() }
-      if (!payload.emp_id || !payload.contenido) return
+      const payload = { ...notaForm, emp_id: Number(notaForm.emp_id), texto: notaForm.texto.trim() }
+      if (!payload.emp_id || !payload.texto) return
       const newNota = await api.notes.create(payload)
       setShowNotaModal(false)
       setNotaForm(emptyNota)
@@ -211,12 +211,12 @@ const People = ({ employees }) => {
             </div>
             <div>
               <label className="block text-sm font-medium text-[var(--ci-text)] mb-1">Contenido *</label>
-              <textarea value={notaForm.contenido} onChange={e => setNotaForm({ ...notaForm, contenido: e.target.value })} className="input-field" rows={4} />
+              <textarea value={notaForm.texto} onChange={e => setNotaForm({ ...notaForm, texto: e.target.value })} className="input-field" rows={4} />
             </div>
           </div>
           <div className="flex justify-end gap-3 p-6 pt-0">
             <button onClick={() => setShowNotaModal(false)} className="btn-secondary">Cancelar</button>
-            <button onClick={handleAddNota} className="btn-primary" disabled={!notaForm.emp_id || !notaForm.contenido.trim()}>Guardar</button>
+            <button onClick={handleAddNota} className="btn-primary" disabled={!notaForm.emp_id || !notaForm.texto.trim()}>Guardar</button>
           </div>
         </div>
       </div>
@@ -430,7 +430,7 @@ const People = ({ employees }) => {
                         {new Date(nota.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <p className="text-sm text-[var(--ci-text)] whitespace-pre-wrap">{nota.contenido}</p>
+                    <p className="text-sm text-[var(--ci-text)] whitespace-pre-wrap">{nota.texto}</p>
                   </div>
                   <button onClick={() => api.notes.delete(nota.id).then(fetchData)} className="p-2 text-[var(--ci-muted)] hover:text-[var(--ci-red)] hover:bg-[var(--ci-red-bg)] rounded-lg transition-colors shrink-0">
                     <Trash2 size={15} />

@@ -310,15 +310,14 @@ create index if not exists idx_reuniones_fecha on reuniones (fecha);
 ### Fase 3 — Sueldos (DB + UI + integraciones)
 **Alcance:** tablas `sueldos` + `inflacion_ref`, componente, calendar y mail.
 
-- [ ] Ejecutar SQL: tablas `sueldos` e `inflacion_ref`
-- [ ] Agregar métodos a `api.js`: `api.sueldos.*` + `api.inflacion.*`
-- [ ] Crear `Sueldos.jsx`:
+- [x] Ejecutar SQL: tablas `sueldos` e `inflacion_ref`
+- [x] Agregar métodos a `api.js`: `api.sueldos.*` + `api.inflacion.*`
+- [x] Crear `Sueldos.jsx`:
   - Tabla de historial por empleado (período, neto, fecha de pago)
   - Modal CRUD: agregar/editar sueldo mensual
   - Gráfico de evolución: sueldo nominal vs ajustado por inflación
   - Carga manual del índice de inflación mensual (tabla `inflacion_ref`)
-- [ ] Integración Google Calendar: crear evento de recordatorio en `fecha_pago`
-- [ ] Integración Gmail: enviar notificación al empleado cuando se registra un pago
+- [x] Integración Google Calendar/Gmail: vía asistente (info note en modal fecha_pago)
 
 ---
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Users, CalendarDays, Smartphone, Laptop, Menu, X, Building, FileText } from 'lucide-react'
+import { Users, CalendarDays, Smartphone, Laptop, Menu, X, Building, FileText, TrendingUp } from 'lucide-react'
 
 const Navbar = ({ employees }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -12,6 +12,7 @@ const Navbar = ({ employees }) => {
     { name: 'Eventos',    href: '/eventos',     icon: CalendarDays },
     { name: 'Homeoffice', href: '/homeoffice',  icon: Laptop },
     { name: 'Licencias',  href: '/licencias',   icon: FileText },
+    { name: 'Sueldos',    href: '/sueldos',     icon: TrendingUp },
     { name: 'Flota',      href: '/flota',       icon: Smartphone },
   ]
 

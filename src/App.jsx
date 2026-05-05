@@ -10,6 +10,7 @@ const Eventos     = React.lazy(() => import('./components/Eventos'))
 const Homeoffice  = React.lazy(() => import('./components/Homeoffice'))
 const Fleet       = React.lazy(() => import('./components/Fleet'))
 const Licencias   = React.lazy(() => import('./components/Licencias'))
+const Sueldos     = React.lazy(() => import('./components/Sueldos'))
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">
@@ -45,6 +46,7 @@ function App() {
               <Route path="/homeoffice"  element={<Homeoffice  employees={employees} />} />
               <Route path="/flota"       element={<Fleet />} />
               <Route path="/licencias"   element={<Licencias   employees={employees} />} />
+              <Route path="/sueldos"     element={<Sueldos     employees={employees} />} />
             </Routes>
           </Suspense>
         </main>

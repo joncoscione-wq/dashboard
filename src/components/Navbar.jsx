@@ -7,17 +7,23 @@ const Navbar = ({ employees }) => {
   const location = useLocation()
 
   const navigation = [
-    { name: 'Resumen',    href: '/',           icon: Building },
-    { name: 'Legajo',     href: '/legajo',      icon: Users },
-    { name: 'Eventos',    href: '/eventos',     icon: CalendarDays },
-    { name: 'Homeoffice', href: '/homeoffice',  icon: Laptop },
-    { name: 'Licencias',  href: '/licencias',   icon: FileText },
-    { name: 'Sueldos',    href: '/sueldos',     icon: TrendingUp },
-    { name: 'Beneficios', href: '/beneficios',  icon: Gift },
-    { name: 'People',     href: '/people',      icon: User },
-    { name: 'Inducción',  href: '/induccion',   icon: BookOpen },
-    { name: 'Flota',      href: '/flota',       icon: Smartphone },
+    { name: 'Resumen',    href: '/',           icon: Building, category: 'General' },
+    { name: 'Legajo',     href: '/legajo',      icon: Users, category: 'Gestión' },
+    { name: 'People',     href: '/people',      icon: User, category: 'Gestión' },
+    { name: 'Eventos',    href: '/eventos',     icon: CalendarDays, category: 'Gestión' },
+    { name: 'Homeoffice', href: '/homeoffice',  icon: Laptop, category: 'Operaciones' },
+    { name: 'Licencias',  href: '/licencias',   icon: FileText, category: 'Operaciones' },
+    { name: 'Sueldos',    href: '/sueldos',     icon: TrendingUp, category: 'RRHH' },
+    { name: 'Beneficios', href: '/beneficios',  icon: Gift, category: 'RRHH' },
+    { name: 'Inducción',  href: '/induccion',   icon: BookOpen, category: 'RRHH' },
+    { name: 'Flota',      href: '/flota',       icon: Smartphone, category: 'Operaciones' },
   ]
+
+  const groupedNav = navigation.reduce((acc, item) => {
+    if (!acc[item.category]) acc[item.category] = []
+    acc[item.category].push(item)
+    return acc
+  }, {})
 
   const activeEmployees = employees.filter(emp => emp.estado === 'Activo').length
 
@@ -28,12 +34,12 @@ const Navbar = ({ employees }) => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">CI</span>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-lg flex items-center justify-center shrink-0">
+                <span className="text-white font-bold text-base sm:text-lg">CI</span>
               </div>
-              <div className="border-l border-white/18 h-8 mx-3"></div>
-              <div>
-                <h1 className="text-2xl font-bold text-white font-poppins">
+              <div className="hidden sm:flex border-l border-white/18 h-8 mx-3"></div>
+              <div className="hidden sm:block">
+                <h1 className="text-xl sm:text-2xl font-bold text-white font-poppins">
                   Contexto Investments
                 </h1>
                 <p className="text-xs text-white/60 uppercase tracking-wider font-dm-sans" style={{letterSpacing: '2.8px'}}>RECURSOS HUMANOS</p>
@@ -42,7 +48,7 @@ const Navbar = ({ employees }) => {
           </div>
 
           {/* Desktop Navigation - Tabs */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center space-x-1 overflow-x-auto scrollbar-hide">
             {navigation.map((item) => {
               const Icon = item.icon
               const isActive = location.pathname === item.href
@@ -50,14 +56,14 @@ const Navbar = ({ employees }) => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-t-lg transition-colors ${
+                  className={`flex items-center space-x-2 px-3 lg:px-4 py-2 rounded-t-lg transition-colors shrink-0 ${
                     isActive
                       ? 'text-white border-b-2 border-[var(--accent)]'
                       : 'text-white/65 hover:text-white'
                   }`}
                 >
-                  <Icon size={18} />
-                  <span className="font-medium">{item.name}</span>
+                  <Icon size={16} className="lg:size-18" />
+                  <span className="font-medium text-sm lg:text-base">{item.name}</span>
                 </Link>
               )
             })}
@@ -89,33 +95,43 @@ const Navbar = ({ employees }) => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-[var(--ci-border)]">
-            <div className="flex flex-col space-y-2">
-              {navigation.map((item) => {
-                const Icon = item.icon
-                const isActive = location.pathname === item.href
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                      isActive
-                        ? 'bg-[var(--accent-bg)] text-[var(--accent)]'
-                        : 'text-[var(--ci-muted)] hover:text-[var(--primary)] hover:bg-[var(--taupe-bg)]'
-                    }`}
-                  >
-                    <Icon size={18} />
-                    <span className="font-medium">{item.name}</span>
-                  </Link>
-                )
-              })}
-              
+          <div className="md:hidden py-4 border-t border-[var(--ci-border)] max-h-[70vh] overflow-y-auto">
+            <div className="flex flex-col space-y-4">
+              {Object.entries(groupedNav).map(([category, items]) => (
+                <div key={category}>
+                  <p className="text-xs font-semibold text-[var(--ci-muted)] uppercase tracking-wider mb-2 px-3">{category}</p>
+                  <div className="flex flex-col space-y-1">
+                    {items.map((item) => {
+                      const Icon = item.icon
+                      const isActive = location.pathname === item.href
+                      return (
+                        <Link
+                          key={item.name}
+                          to={item.href}
+                          onClick={() => setIsMenuOpen(false)}
+                          className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                            isActive
+                              ? 'bg-[var(--accent-bg)] text-[var(--accent)]'
+                              : 'text-[var(--ci-muted)] hover:text-[var(--primary)] hover:bg-[var(--taupe-bg)]'
+                          }`}
+                        >
+                          <Icon size={18} />
+                          <span className="font-medium">{item.name}</span>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+
               <div className="pt-4 mt-4 border-t border-[var(--ci-border)]">
                 <div className="text-center">
-                    <p className="text-sm text-[var(--ci-muted)]">Equipo activo</p>
-                    <p className="text-lg font-bold text-[var(--ci-green)]">{activeEmployees}</p>
-                  </div>
+                  <p className="text-sm text-[var(--ci-muted)]">Equipo activo</p>
+                  <p className="text-lg font-bold text-[var(--ci-green)]">{activeEmployees}</p>
+                </div>
+                <div className="mt-3 text-center text-xs text-[var(--ci-muted)]">
+                  {new Date().toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </div>
               </div>
             </div>
           </div>
